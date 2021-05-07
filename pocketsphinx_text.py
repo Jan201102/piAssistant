@@ -1,16 +1,15 @@
 from pocketsphinx.pocketsphinx import *
-from sphinxbase.sphinxbase import *
+
 from os import path,mkdir
-from shutil import move
+
 from Assistant_audio_backend import *
-from Utilities import *
-from train_menu_gui import *
+
 
 class PocketsphinxText(Audio_backend):
-    def __init__(self,**kwargs):
+    def __init__(self, model, **kwargs):
         
-        if os.path.exists(kwargs['model']):
-            self.model = kwargs['model']
+        if os.path.exists(model):
+            self.model = model
         else:
             print("can't find model")
             exit(0)
@@ -53,9 +52,3 @@ class PocketsphinxText(Audio_backend):
         return([seg.word for seg in self.decoder.seg()])
         
         return final
-    def menu(self):
-        '''
-        Erzeugt eine kleine Gui.
-        Siehe: train_menu_gui.py
-        '''
-        PocketsphinxGui(self.model) 
