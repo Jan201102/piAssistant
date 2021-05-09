@@ -1,15 +1,15 @@
 from pocketsphinx.pocketsphinx import *
-from sphinxbase.sphinxbase import *
+
 from os import path
-from Assistant_audio_backend import *
+from auditoryCortex.ear.ear import *
 import time
 
-class PocketsphinxKWS(Audio_backend):
+class PocketsphinxKWS():
     def __init__(self,**kwargs):
         self.start_sec = 0
         self.kws_decoder = (kwargs)
-        super(PocketsphinxKWS,self).__init__(**kwargs)
-        
+        self.ear=Ear()
+
     @property
     def kws_decoder(self):
         return self.__kws_decoder
@@ -33,18 +33,15 @@ class PocketsphinxKWS(Audio_backend):
         '''
         Erweitert Audio-backend.wait() um die für pocketahpinx nötigen Zeilen
         '''
-        self.start_audio(threading = False)
+        self.ear.start_audio(threading = False)
         self.kws_decoder.start_utt()
         
-        self.kws_decoder.process_raw(self.get_audio(),False,False)
+        self.kws_decoder.process_raw(self.ear.get_audio(),False,False)
         while self.kws_decoder.hyp() == None:
-            self.kws_decoder.process_raw(self.get_audio(),False,False)
+            self.kws_decoder.process_raw(self.ear.get_audio(),False,False)
         self.start_sec = time.perf_counter()
         self.kws_decoder.end_utt()
         print('{} kws decoder ende utt'.format(time.perf_counter()-self.start_sec))
-        self.stop_audio()
+        self.ear.stop_audio()
         print('{} sec  stoped audio -> wait() finished'.format(time.perf_counter()-self.start_sec))
         return True
-    
-
-        

@@ -2,13 +2,13 @@ from pocketsphinx.pocketsphinx import *
 
 from os import path,mkdir
 
-from Assistant_audio_backend import *
+from auditoryCortex.ear.ear import *
 
 
-class PocketsphinxText(Audio_backend):
+class PocketsphinxText():
     def __init__(self, model, **kwargs):
-        
-        if os.path.exists(model):
+        self.ear=Ear()
+        if path.exists(model):
             self.model = model
         else:
             print("can't find model")
@@ -40,15 +40,14 @@ class PocketsphinxText(Audio_backend):
     def listen(self,sec):
 
         self.decoder.start_utt()
-        self.start_audio(False,sec)
-        data = self.get_audio()
+        self.ear.start_audio(False,sec)
+        data = self.ear.get_audio()
 
         while data != None:
             self.decoder.process_raw(data,False,False)
-            data = self.get_audio()
+            data = self.ear.get_audio()
         
         self.decoder.end_utt()
         
         return([seg.word for seg in self.decoder.seg()])
-        
-        return final
+

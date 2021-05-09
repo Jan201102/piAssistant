@@ -1,13 +1,9 @@
-from vosk_text import *
-from pocketsphinx_kws import *
-
-class VAssistant(VoskText,PocketsphinxKWS):
-    pass
-
-a = VAssistant(name='computer',model='vosk-model',kws_model = 'cont-de',audio=True)
+from main import *
+a = PiAssistant(name='computer',models=['/home/pi/piAssistant/vosk-model'],kws_model = '/home/pi/jasper_v3/cont-de')
 
 while True:
     print('listening...')
     if a.wait():
-        command = a.listen()
-        print(command['text'])
+        command = a.listen(record=True)
+        print(command)
+        #'/home/pi/piAssistant/vosk-model',
