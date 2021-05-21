@@ -24,10 +24,10 @@ class VoskText():
             model = Model(path)
             self.__decoder.append(KaldiRecognizer(model,float(self.ear.sampRate)))
         
-    def listen(self, record = False, verbose = 0):
-        #if not verbose : print('{} sec listen started'.format(time.perf_counter()-self.ear.start_sec))
+    def listen(self, record = False, verbose = 1,file=None):
+        if verbose : print('{} sec listen started'.format(time.perf_counter()-self.ear.start_sec))
         self.ear.start_audio(record, threading=False, verbose= verbose)
-        #if not verbose: print('{} sec to react'.format(time.perf_counter()-self.start_sec))
+        if verbose: print('{} sec to react'.format(time.perf_counter()-self.start_sec))
         data = self.ear.get_audio()
         run = True
         partial_results = []
@@ -37,10 +37,11 @@ class VoskText():
             for i, dec in enumerate(self.decoder):
                 if not dec.AcceptWaveform(data):
                     partial_results[i] = dec.PartialResult()
-                    if not verbose: print(partial_results[i])
+                    if verbose: print(partial_results[i])
                 else:
                     run = False
             data = self.ear.get_audio()
             
-        print(self.ear.stop_audio(verbose))
-        return [json.loads(dec.FinalResult()) for dec in self.decoder]
+        file = self.ear.stop_audio(verbose)
+        return [[json.loads(dec.FinalResult()) for dec in self.decoder],file]
+

@@ -9,8 +9,8 @@ class AuditoryCortex(IauditoryCortexGateway):
         self.text = VoskText(models)
         self.kws = PocketsphinxKWS(name = name, kws_model= kws_model)
 
-    def listen(self,record=0,verbose=0):
-        return self.text.listen(record,verbose)
+    def listen(self,file=None,record=0,verbose=1):
+        return self.text.listen(file,record,verbose)
 
     def wait(self):
         return self.kws.wait()
