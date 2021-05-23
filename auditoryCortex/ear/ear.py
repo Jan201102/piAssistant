@@ -16,16 +16,18 @@ class Ear(IearGateway):
         self.sampRate = 16000
         self.file=None
         for i in range(self.p.get_device_count()):
-            dev = self.p.get_device_info_by_index(i)
-            if dev['maxInputChannels'] == 1:
-                self.mic_id = i
-                self.sampRate = dev['defaultSampleRate']
+            try:
+                if self.p.is_format_supported(self.sampRate,input_device=i,input_format=self.FORMAT,input_channels=self.CHANNELS):
+                    self.mic_id = i
+            except ValueError:
+                pass
         if self.mic_id == None:
             print('Attention: no mic plugged in!')
 
     def start_audio(self,file=None, record=False, timeout=0, threading=True, verbose=0):
 
         if file == None:
+            print('start_stream')
             self.threading = threading
             self.record = record
             start = time.perf_counter()
@@ -56,7 +58,9 @@ class Ear(IearGateway):
         return data
 
     def stop_audio(self,verbose=0):
+        print(self.file)
         if self.file==None:
+
             if self.threading == True:
                 self.thread.stop(verbose)
             self.stream.stop_stream()

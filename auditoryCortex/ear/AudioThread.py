@@ -1,8 +1,8 @@
 from queue import Queue
 from threading import Thread
 
-class AudioThread():
 
+class AudioThread:
     def __init__(self, stream, chunk, timeout=0, rate=16000):
         self.run = True
         self.queue = Queue(maxsize=0)
@@ -11,7 +11,7 @@ class AudioThread():
         while self.queue.empty():
             pass
 
-    def stop(self,verbose=0):
+    def stop(self, verbose=0):
         self.run = False
         try:
             if not verbose: print('waiting for Thread to finish...')
@@ -32,8 +32,7 @@ class AudioThread():
             self.run = False
 
     def get(self):
+        if not self.queue.empty() or self.run != False:
+            return self.queue.get()
 
-        if self.queue.empty() and self.run == False:
-            return None
-
-        return self.queue.get()
+        return None
