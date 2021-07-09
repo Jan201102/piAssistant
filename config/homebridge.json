@@ -1,0 +1,74 @@
+{"accessories": [
+        {
+            "accessory": "mqttthing",
+            "type": "lightbulb",
+            "name": "Bücherturm",
+            "topics": {
+                "getOn": "buecherturm/getOn",
+                "setOn": "buecherturm/setOn",
+                "setRGBW": "buecherturm/setRGBW",
+                "getRGBW": "buecherturm/getRGBW"
+            },
+            "hex": true
+        },
+        {
+            "accessory": "mqttthing",
+            "type": "lightbulb",
+            "name": "MQTT test lamp",
+            "topics": {
+                "getOn": "mqttLamp/getOn",
+                "setOn": "mqttLamp/setOn",
+                "getRGB": "mqttLamp/getRGB",
+                "setRGB": "mqttLamp/setRGB"
+            },
+            "hex": true
+        },
+        {
+            "accessory": "mqttthing",
+            "type": "lightbulb",
+            "name": "Blumentopf",
+            "topics": {
+                "getOn": "blumentopf/getOn",
+                "setOn": "blumentopf/setOn",
+                "getRGB": "blumentopf/getRGB",
+                "setRGB": "blumentopf/setRGB"
+            },
+            "hex": true
+        },
+        {
+            "accessory": "mqttthing",
+            "type": "lightbulb",
+            "name": "Bücherregal",
+            "topics": {
+                "getOn": "mqttRegal/getOn",
+                "setOn": "mqttRegal/setOn",
+                "getRGB": "mqttRegal/getRGB",
+                "setRGB": "mqttRegal/setRGB"
+            },
+            "hex": true
+        },
+        {
+            "accessory": "mqttthing",
+            "type": "leakSensor",
+            "name": "Regen Sensor",
+            "topics": {
+                "getLeakDetected": "esp8266/state",
+                "getStatusLowBattery": "esp8266/battery/status"
+            },
+            "integerValue": true
+        },
+        {
+            "accessory": "FakeBulb",
+            "name": "Test lamp",
+            "bulb_name": "Lamp1"
+        },
+        {
+            "accessory": "mqttthing",
+            "type": "temperatureSensor",
+            "name": "Thermometer",
+            "topics": {
+                "getCurrentTemperature": "temp/getTemp"
+            }
+        }
+  ]
+}
