@@ -4,8 +4,8 @@ from auditoryCortex.ear.ear import *
 import json
 import time
 class VoskText():
-    def __init__(self, models, **kwargs):
-        self.ear = Ear()
+    def __init__(self,ear, models, **kwargs):
+        self.ear = ear
         SetLogLevel(0)
         for model in models:
             if not path.exists(model):

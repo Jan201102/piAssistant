@@ -5,10 +5,10 @@ from auditoryCortex.ear.ear import *
 import time
 
 class PocketsphinxKWS():
-    def __init__(self,**kwargs):
+    def __init__(self,ear,**kwargs):
         self.start_sec = 0
         self.kws_decoder = (kwargs)
-        self.ear=Ear()
+        self.ear=ear
 
     @property
     def kws_decoder(self):

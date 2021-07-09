@@ -6,8 +6,8 @@ from auditoryCortex.ear.ear import *
 
 
 class PocketsphinxText():
-    def __init__(self, model, **kwargs):
-        self.ear=Ear()
+    def __init__(self,ear, model, **kwargs):
+        self.ear=ear
         if path.exists(model):
             self.model = model
         else:
