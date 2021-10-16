@@ -1,5 +1,6 @@
 from main import *
-a = Main(name='computer', models=['/home/pi/piAssistant/vosk-model', '/home/pi/piAssistant/vosk-model-en'], kws_model ='/home/pi/jasper_v3/cont-de')
+a = Main(name='computer', models=['C:/Users/lukas/Downloads/vosk-model'], kws_model ='C:/Users/lukas/Downloads/cmusphinx-cont-de')
+#print(a.listen(file='6061421695164418587.wav'))
+
 a.start()
 
-       #'/home/pi/piAssistant/vosk-model',

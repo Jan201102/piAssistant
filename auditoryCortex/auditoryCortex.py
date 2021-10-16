@@ -7,7 +7,7 @@ class AuditoryCortex(IauditoryCortexGateway):
     def __init__(self,models,kws_model,name):
         self.ear = Ear()
         if self.ear.mic_id != None:
-            self.text = VoskText(models,self.ear)
+            self.text = VoskText(self.ear, models)
             self.kws = PocketsphinxKWS(self.ear, name = name, kws_model= kws_model)
 
     def listen(self,file=None,record=False,verbose=1):

@@ -1,6 +1,7 @@
 import pyaudio
 from auditoryCortex.IearGateway import *
 from auditoryCortex.ear.AudioThread import *
+from auditoryCortex.ear.recorder import Recorder
 import wave
 import time
 
@@ -14,22 +15,26 @@ class Ear(IearGateway):
     def __init__(self, **kwargs):
         self.mic_id = None
         self.sampRate = 16000
-        self.file=None
+        self.file = None
+        self.recorder = Recorder(self.sampRate, self.CHANNELS, self.p.get_sample_size(self.FORMAT))
         for i in range(self.p.get_device_count()):
             try:
-                if self.p.is_format_supported(self.sampRate,input_device=i,input_format=self.FORMAT,input_channels=self.CHANNELS):
+                if self.p.is_format_supported(self.sampRate, input_device=i, input_format=self.FORMAT,
+                                              input_channels=self.CHANNELS):
                     self.mic_id = i
             except ValueError:
                 pass
-        if self.mic_id == None:
+        if self.mic_id is None:
             print('Attention: no mic plugged in!')
 
-    def start_audio(self,file=None, record=False, timeout=0, threading=True, verbose=0):
-
-        if file == None:
+    def start_audio(self, file=None, record=False, timeout=0, threading=True, verbose=0):
+        self.file = file
+        self.recorder.new_record()
+        if file is None:
             print('start_stream')
             self.threading = threading
             self.record = record
+
             start = time.perf_counter()
             self.stream = self.p.open(format=self.FORMAT,
                                       channels=self.CHANNELS,
@@ -40,46 +45,30 @@ class Ear(IearGateway):
 
             self.stream.start_stream()
             if not verbose: print('{} second[s] for opening audio stream'.format(time.perf_counter() - start))
-            self.frames = []
-            if threading == True:
+            if threading:
                 self.thread = AudioThread(self.stream, self.CHUNK, timeout, self.sampRate)
         else:
             self.file = wave.open(file, 'rb')
+
     def get_audio(self):
-        if self.file == None:
-            if self.threading == True:
+        if self.file is None:
+            if self.threading:
                 data = self.thread.get()
             else:
                 data = self.stream.read(self.CHUNK, exception_on_overflow=False)
             if self.record:
-                self.frames.append(data)
+                self.recorder.record(data)
         else:
-            data=self.file.readframes(1024)
+            data = self.file.readframes(1024)
         return data
 
-    def stop_audio(self,verbose=0):
+    def stop_audio(self, verbose=0):
         print(self.file)
-        if self.file==None:
+        if self.file is None:
 
-            if self.threading == True:
+            if self.threading:
                 self.thread.stop(verbose)
             self.stream.stop_stream()
             self.stream.close()
 
-            if len(self.frames) != 0:
-                wav = hash(tuple(self.frames))
-                # print('hash: {}'.format(wav))
-                filename = str(wav) + ".wav"
-
-                # write wav
-                wf = wave.open(filename, 'wb')
-                wf.setnchannels(self.CHANNELS)
-                wf.setsampwidth(self.p.get_sample_size(self.FORMAT))
-                wf.setframerate(self.sampRate)
-                wf.writeframes(b''.join(self.frames))
-                wf.close()
-
-                return filename
-        return
-
-
+        return self.recorder.save_recording()

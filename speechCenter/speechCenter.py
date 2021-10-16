@@ -1,6 +1,8 @@
 from IspeechCenterGateway import IspeechCenterGateway
-from tts import *
-class speechCenter(IspeechCenterGateway):
+from speechCenter.tts import *
+
+
+class SpeechCenter(IspeechCenterGateway):
     def __init__(self):
         self.tts = TTS()
 
