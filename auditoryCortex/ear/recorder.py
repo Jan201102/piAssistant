@@ -2,8 +2,8 @@ import wave
 
 
 class Recorder:
-    def __init__(self, samprate, channels, samp_size):
-        self.samprate = samprate
+    def __init__(self, sampRate, channels, samp_size):
+        self.sampRate = sampRate
         self.channels = channels
         self.samp_size = samp_size
         self.frames = []

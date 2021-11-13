@@ -1,11 +1,13 @@
 from auditoryCortex.auditoryCortex import *
 from speechCenter.speechCenter import *
+from memory.memory import Memory
 import importlib
 import json
 
 
 class Main:
     def __init__(self, *args, **kwargs):
+        self.memory = Memory()
         self.audiCort = AuditoryCortex(*args, **kwargs)
         self.speechCent = SpeechCenter()
         self.import_plugins = json.load(open("config/plugins.json"))
@@ -25,6 +27,7 @@ class Main:
             print('listening...')
 
             if self.audiCort.wait():
-                command = self.audiCort.listen()
-                print(command[0][0])
+                command = self.audiCort.listen(record=True,verbose=0)
+                print(command)
+                self.memory.memorize(command[1], command[0][0]['text'])
                 self.process(command[0][0]['text'])
