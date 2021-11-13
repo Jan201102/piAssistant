@@ -25,7 +25,7 @@ class Ear(IearGateway):
             except ValueError:
                 pass
         if self.mic_id is None:
-            print('Attention: no mic plugged in!')
+            logging.warning('Attention: no mic plugged in!')
         self.stream = self.p.open(format=self.FORMAT,
                                   channels=self.CHANNELS,
                                   input_device_index=self.mic_id,
@@ -40,15 +40,11 @@ class Ear(IearGateway):
         self.file = file
         self.recorder.new_record()
         if file is None:
-            print('start_stream')
             self.threading = threading
             self.record = record
-
             start = time.perf_counter()
-
-
             self.stream.start_stream()
-            if not verbose: print('{} second[s] for opening audio stream'.format(time.perf_counter() - start))
+            logging.debug('{} second[s] for opening audio stream'.format(time.perf_counter() - start))
             if threading:
                 self.thread = AudioThread(self.stream, self.CHUNK, timeout, self.sampRate)
         else:
@@ -67,7 +63,6 @@ class Ear(IearGateway):
         return data
 
     def stop_audio(self, verbose=0):
-        print(self.file)
         if self.file is None:
 
             if self.threading:

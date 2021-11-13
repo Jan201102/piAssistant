@@ -3,6 +3,9 @@ homebridge plugin
 """
 import json
 import subprocess
+import logging
+
+
 class Plugin:
     def __init__(self):
         self.bulbs = json.load(open("config/homebridge.json"))["accessories"]
@@ -11,7 +14,7 @@ class Plugin:
     def process(self,text):
         light_type = "RGB"
         for lamp in self.bulbs:
-            print(lamp)
+            logging.debug(lamp)
             if lamp['accessory'] == 'mqttthing':
                 topic = None
                 value = None
@@ -26,7 +29,7 @@ class Plugin:
 
                         for color in self.colors.keys():
                             if color in text:
-                                print('found color {}'.format(color))
+                                logging.debug('found color {}'.format(color))
                                 if 'setRGBW' in lamp["topics"]:
                                     topic = lamp["topics"]["setRGBW"]
                                     light_type = "RGBW"
@@ -41,6 +44,6 @@ class Plugin:
                                 else:
                                     value = self.colors[color][light_type]
                 if topic != None and value != None:
-                    print('setting {} to {}'.format(topic, value))
+                    logging.info('setting {} to {}'.format(topic, value))
                     subprocess.call('mosquitto_pub -h 192.168.0.174 -t {} -m {}'.format(topic, value), shell=True)
 

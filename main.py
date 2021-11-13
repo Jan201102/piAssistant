@@ -3,10 +3,11 @@ from speechCenter.speechCenter import *
 from memory.memory import Memory
 import importlib
 import json
-
+import logging
 
 class Main:
     def __init__(self, *args, **kwargs):
+        logging.basicConfig(level=logging.DEBUG)
         self.memory = Memory()
         self.audiCort = AuditoryCortex(*args, **kwargs)
         self.speechCent = SpeechCenter()
@@ -18,16 +19,15 @@ class Main:
             self.plugins.append(plugin)
 
     def process(self, text):
-        print(text)
         for plugin in self.plugins:
             plugin.process(text)
 
     def start(self):
         while True:
-            print('listening...')
+            logging.info('listening...')
 
             if self.audiCort.wait():
                 command = self.audiCort.listen(record=True,verbose=0)
-                print(command)
+                logging.info(command)
                 self.memory.memorize(command[1], command[0][0]['text'])
                 self.process(command[0][0]['text'])

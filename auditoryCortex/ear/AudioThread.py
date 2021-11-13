@@ -1,5 +1,6 @@
 from queue import Queue
 from threading import Thread
+import logging
 
 
 class AudioThread:
@@ -14,9 +15,9 @@ class AudioThread:
     def stop(self, verbose=0):
         self.run = False
         try:
-            if not verbose: print('waiting for Thread to finish...')
+            logging.info('waiting for Thread to finish...')
             self.thread.join()
-            if not verbose: print('Done')
+            logging.info('Done')
         except:
             pass
 
