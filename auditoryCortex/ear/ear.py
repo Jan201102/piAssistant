@@ -23,9 +23,10 @@ class Ear(IearGateway):
                                               input_channels=self.CHANNELS):
                     self.mic_id = i
             except ValueError:
-                pass
+                logging.debug("{} not supporting 16000khz".format(i))
         if self.mic_id is None:
             logging.warning('Attention: no mic plugged in!')
+        self.mic_id = 1
         self.stream = self.p.open(format=self.FORMAT,
                                   channels=self.CHANNELS,
                                   input_device_index=self.mic_id,

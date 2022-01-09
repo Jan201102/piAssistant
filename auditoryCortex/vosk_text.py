@@ -8,7 +8,7 @@ import json
 class VoskText():
     def __init__(self,ear, models, **kwargs):
         self.ear = ear
-        SetLogLevel(0)
+        SetLogLevel(-1)
         for model in models:
             if not path.exists(model):
                 logging.error("cant't find: " +model)

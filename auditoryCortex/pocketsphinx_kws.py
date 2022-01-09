@@ -23,6 +23,7 @@ class PocketsphinxKWS:
         config.set_string('-dict', path.join(model,'model.dic'))
         config.set_string('-keyphrase',name)
         config.set_float('-kws_threshold', float(1e-20))
+        config.set_string('-logfn','nul')
         self.__kws_decoder = Decoder(config)
         
     def wait(self):
