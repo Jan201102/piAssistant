@@ -11,8 +11,8 @@ class Signals(Isignals):
 
     def activate(self):
         logging.debug("lighting up Signal")
-        subprocess.call("mqtt_pub -h {} -t {} -m {}".format(self.host, self.lightName, self.value), shell=True)
+        subprocess.call("mosquitto_pub -h {} -t {} -m {}".format(self.host, self.lightName, self.value), shell=True)
 
     def deactivate(self):
         logging.debug("turning off signal")
-        subprocess.call("mqtt_pub -h {} -t {} -m {}".format(self.host, self.lightName, "00000000"), shell=True)
+        subprocess.call("mosquitto_pub -h {} -t {} -m {}".format(self.host, self.lightName, "00000000"), shell=True)
