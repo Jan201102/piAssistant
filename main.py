@@ -32,6 +32,6 @@ class Main:
                 self.signals.activate()
                 command = self.audiCort.listen(record=True,verbose=0)
                 logging.info(command)
-                self.memory.memorize(command[1], command[0][0]['text'])
                 self.process(command[0][0]['text'])
+                self.memory.memorize(command[1], command[0][0]['text'])
                 self.signals.deactivate()

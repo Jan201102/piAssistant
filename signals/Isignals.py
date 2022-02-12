@@ -5,7 +5,7 @@ from abc import ABC
 class Isignals(ABC):
 
     @abc.abstractmethod
-    def __init(self):
+    def __init__(self):
         """
         Currently does nothing, may be used to initialize external device connections, etc.
         :return: None

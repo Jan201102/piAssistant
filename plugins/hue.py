@@ -3,7 +3,6 @@ Phillips Hue plugin
 """
 
 from hue_api import HueApi
-from time import sleep
 import tensorflow as tf
 import logging
 
@@ -29,7 +28,7 @@ class Plugin:
         if pred[0].argmax() != 0:
             for light in self.lights:
                 if light.name.lower() in command.replace('ß','ss') or pred[0].argmax() == 2:
-                    logging.DEBUG("{}".format(light.name))
+                    logging.debug("{}".format(light.name))
                     if pred[1] >= 1:
                         light.set_on()
                         light.set_brightness(int(pred[1])*25)
