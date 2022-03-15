@@ -17,7 +17,7 @@ class PocketsphinxKWS:
 
     @kws_decoder.setter
     def kws_decoder(self, kwargs):
-        model = kwargs['kws_model']
+        model = kwargs['pocketsphinxModel']
         name = kwargs['name']
         config = Decoder.default_config()
         config.set_string('-hmm', path.join(model, 'hmm'))

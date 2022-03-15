@@ -4,11 +4,11 @@ from IauditoryCortexGateway import *
 from auditoryCortex.ear.ear import *
 
 class AuditoryCortex(IauditoryCortexGateway):
-    def __init__(self,models,kws_model,name,sensitivity):
+    def __init__(self,*args,**kwargs):
         self.ear = Ear()
         if self.ear.mic_id != None:
-            self.text = VoskText(self.ear, models)
-            self.kws = PocketsphinxKWS(self.ear, name = name, kws_model= kws_model, sensitivity=sensitivity)
+            self.text = VoskText(self.ear, kwargs["voskModel"])
+            self.kws = PocketsphinxKWS(self.ear,**kwargs)
 
     def listen(self,file=None,record=False,verbose=1):
         if self.ear.mic_id != None:

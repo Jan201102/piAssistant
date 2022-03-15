@@ -5,19 +5,26 @@ from signals.signals import Signals
 import importlib
 import json
 import logging
+import json
 
 class Main:
     def __init__(self, *args, **kwargs):
-        logging.basicConfig(level=logging.DEBUG)
+        logging.basicConfig(level=logging.ERROR)
+
+        with open(kwargs["configFile"],"r") as file:
+            config = json.load(file)
+
         self.memory = Memory()
-        self.audiCort = AuditoryCortex(*args, **kwargs)
+        self.audiCort = AuditoryCortex(*args,**config["assistant"])
         self.speechCent = SpeechCenter()
-        self.import_plugins = json.load(open("config/plugins.json"))
-        self.plugins = []
         self.signals = Signals()
+
+        self.import_plugins = config["plugins"].keys()
+        self.plugins = []
+
         for import_plugin in self.import_plugins:
             plugin_module = importlib.import_module("plugins."+import_plugin, ".")
-            plugin = plugin_module.Plugin()
+            plugin = plugin_module.Plugin(**config["plugins"][import_plugin])
             self.plugins.append(plugin)
 
     def process(self, text):

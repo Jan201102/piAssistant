@@ -1,0 +1,6 @@
+{"assistant":{"voskModel": ["C:/Users/lukas/Downloads/vosk-model"],
+              "sensitivity": 100,
+              "pocketsphinxModel":"C:/Users/lukas/Downloads/cmusphinx-cont-de",
+              "name": "computer"},
+"plugins": {"hue":{"ip":"192.168.0.164"}}
+}

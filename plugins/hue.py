@@ -5,19 +5,30 @@ Phillips Hue plugin
 from hue_api import HueApi
 import tensorflow as tf
 import logging
-
+from time import sleep
 
 class Plugin:
-    def __init__(self):
+    def __init__(self,**kwargs):
         self.api = HueApi()
         self.model = tf.keras.models.load_model("./plugins/light_controll.h5",custom_objects={'Functional': tf.keras.models.Model})
         try:
             self.api.load_existing()
             self.lights = [light for light in self.api.fetch_lights()]
         except :
-            ip = input('press connect-button on huebridge and enter ip-address:')
-            self.api.create_new_user(ip)
-            self.api.save_api_key()
+            if "ip" in kwargs.keys():
+                ip = kwargs["ip"]
+                print("please press the connect button on th huebridge")
+            else:
+                ip = input('press connect-button on huebridge and enter ip-address:')
+            print("connecting")
+            for _ in range(20):
+                try:
+                    self.api.create_new_user(ip)
+                    self.api.save_api_key()
+                    print("Done")
+                    break
+                except:
+                    sleep(1)
 
         self.lights = [light for light in self.api.fetch_lights()]
 
