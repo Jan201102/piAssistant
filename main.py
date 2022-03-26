@@ -9,7 +9,7 @@ import json
 
 class Main:
     def __init__(self, *args, **kwargs):
-        logging.basicConfig(level=logging.ERROR)
+        logging.basicConfig(level=logging.DEBUG)
 
         with open(kwargs["configFile"],"r") as file:
             config = json.load(file)
@@ -24,7 +24,7 @@ class Main:
 
         for import_plugin in self.import_plugins:
             plugin_module = importlib.import_module("plugins."+import_plugin, ".")
-            plugin = plugin_module.Plugin(**config["plugins"][import_plugin])
+            plugin = plugin_module.Plugin(self.memory, **config["plugins"][import_plugin])
             self.plugins.append(plugin)
 
     def process(self, text):
@@ -40,5 +40,5 @@ class Main:
                 command = self.audiCort.listen(record=True,verbose=0)
                 logging.info(command)
                 self.process(command[0][0]['text'])
-                self.memory.memorize(command[1], command[0][0]['text'])
+                self.memory.memorize_audio(command[1], command[0][0]['text'])
                 self.signals.deactivate()

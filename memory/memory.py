@@ -1,39 +1,28 @@
-import mysql.connector
+import logging
 import os
+import pandas as pd
+import shutil
 
-
-# Table memory:
-# CREATE TABLE memory(ID INTEGER AUTO_INCREMENT,
-#                    audio MEDIUMBLOB null,
-#                    transcription varchar(256) null,
-#                    Primary key(ID));
 
 class Memory:
-    def __init__(self):
-        try:
-            self.DBconnection = mysql.connector.connect(user='piAssistant',
-                                                        password='12345',
-                                                        database='Memory')
-        except:
-            self.DBconnection = None
+    def __int__(self):
+        pass
 
-    def __del__(self):
-        self.DBconnection.close()
+    def memorize(self, plugin, **data):
+        if plugin+".csv" in os.listdir("./memory"):
+            dataframe = pd.read_csv("./memory/"+plugin+".csv")
+        else:
+            dataframe = pd.DataFrame()
+        logging.debug(dataframe)
+        for key in data.keys():
+            if key not in dataframe.columns:
+                dataframe[key] = None
+        logging.debug(dataframe)
+        dataframe = dataframe.append(data, ignore_index=True)
 
-    def memorize(self, audio_file=None, transcription=None):
-        if self.DBconnection is not None:
-            query = "INSERT INTO memory(audio,transcription) Values(%s,%s)"
-            cursor = self.DBconnection.cursor()
-            blob = None
+        dataframe.to_csv("./memory/"+plugin+".csv",index=False)
 
-            if audio_file is not None:
-                with open(audio_file, 'rb') as f:
-                    blob = f.read()
-                os.remove(audio_file)
-
-            if audio_file is not None or transcription is not None:
-                data = (blob, transcription)
-                cursor.execute(query, data)
-                self.DBconnection.commit()
-
-            cursor.close()
+    def memorize_audio(self, wavfile, text):
+        shutil.move(wavfile, "./memory/wavFiles/")
+        with open("./memory/transcriptions.csv", "a") as out:
+            out.write(wavfile+";"+text+"\n")
