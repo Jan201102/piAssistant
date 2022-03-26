@@ -1,3 +1,6 @@
+'''
+CURRENTLY NOT MAINTAINED
+'''
 from pocketsphinx.pocketsphinx import *
 
 from os import path,mkdir

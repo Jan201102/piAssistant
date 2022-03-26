@@ -1,6 +1,6 @@
 import logging
 from pocketsphinx.pocketsphinx import *
-from os import path
+import os
 import time
 
 
@@ -17,11 +17,28 @@ class PocketsphinxKWS:
 
     @kws_decoder.setter
     def kws_decoder(self, kwargs):
-        model = kwargs['pocketsphinxModel']
+        path = kwargs['pocketsphinxModel']
         name = kwargs['name']
+        hmm = None
+        dictionary = None
+        for entry in os.scandir(path):
+            if entry.is_dir():
+                if 'feat.params' and 'mdef' and 'noisedict' in os.listdir(path + "/" + entry.name):
+                    hmm = os.path.join(path, entry.name)
+                if ".dic" in entry.name:
+                    dictionary = os.path.join(path, entry.name)
+            else:
+                if ".dic" in entry.name:
+                    dictionary = os.path.join(path, entry.name)
+
+        if hmm is None:
+            raise ValueError('hmm not found for pocketsphinx')
+        if dictionary is None:
+            raise ValueError('dictionary for pocketsphinx not found')
+
         config = Decoder.default_config()
-        config.set_string('-hmm', path.join(model, 'hmm'))
-        config.set_string('-dict', path.join(model, 'model.dic'))
+        config.set_string('-hmm', hmm)
+        config.set_string('-dict', dictionary)
         config.set_string('-keyphrase', name)
         config.set_float('-kws_threshold', self.sensitivity)
         config.set_string('-logfn', 'nul')
