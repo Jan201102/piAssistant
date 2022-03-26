@@ -56,5 +56,5 @@ class Plugin:
             data["label"] = "all"
         else:
             data["label"] = "specific"
-
+        data["text"] = command
         self.memory.memorize("hue", **data)
