@@ -29,7 +29,10 @@ class Main:
 
     def process(self, text):
         for plugin in self.plugins:
-            plugin.process(text)
+            result = plugin.process(text)
+            if result is not None:
+                self.speechCent.say(result)
+
 
     def start(self):
         while True:
