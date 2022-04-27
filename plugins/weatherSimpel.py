@@ -65,7 +65,7 @@ class Plugin():
         return None
 
 if __name__ == "__main__":
-    plug = Plugin(None,location="Wiesloch",apiKey="359e69f5c0d75a309fc5fd21e951a42b")
+    plug = Plugin(None,location="Wiesloch",apiKey="Your API key")
     com = input("geben sie etwas ein:")
     ret = plug.process(com)
     print(ret)
