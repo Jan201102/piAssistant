@@ -9,9 +9,12 @@
 - vosk model of your choice: https://alphacephei.com/vosk/models
 - pocketsphinx model of your choice: https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/
 ### Optional Python packages
+-general
+  -mosquitto
 - hue plugin
   - tensorflow
   - hue-py
+  - keras
 ### Configuration
 The piAssistant is configuered via the config.json file.
 ### Run
