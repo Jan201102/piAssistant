@@ -1,16 +1,15 @@
 """
 Phillips HUe pulgin with TFlite
 """
-import tensorflow as tf
+import tflite_runtime.interpreter as tflite
 from hue_api import HueApi
 import logging
 from time import sleep
-
-
+import numpy as np
 class Plugin():
     def __init__(self,memory,**kwargs):
         # initializing model
-        self.interpreter = tf.lite.Interpreter(model_path="./plugins/light_controll.tflite")
+        self.interpreter = tflite.Interpreter(model_path="./plugins/light_controll.tflite")
         self.interpreter.allocate_tensors()
 
         self.input_details = self.interpreter.get_input_details()
@@ -21,8 +20,6 @@ class Plugin():
 
         self.memory = memory
         self.api = HueApi()
-        self.model = tf.keras.models.load_model("./plugins/light_controll.h5",
-                                                custom_objects={'Functional': tf.keras.models.Model})
         try:
             self.api.load_existing()
             self.lights = [light for light in self.api.fetch_lights()]
@@ -50,8 +47,11 @@ class Plugin():
         #preprocessing
         data = {}
         splitCommand = list(command)
-        tokenCommand = tf.keras.preprocessing.sequence.pad_sequences([[ord(char) for char in splitCommand]], maxlen=256)
-
+        zeros = np.zeros((1,256),np.int32)
+        for i in range(len(splitCommand)):
+            pos = 256-len(splitCommand)+i
+            zeros[0][pos] = ord(splitCommand[i])
+        tokenCommand = zeros
         #model prediction
         self.interpreter.set_tensor(self.input_details[0]['index'], tokenCommand)
         self.interpreter.invoke()
