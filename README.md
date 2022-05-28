@@ -11,7 +11,6 @@
 ### Optional Python packages
 - general
   - mosquitto
-#### Plugins
 - hue
   - tensorflow
   - hue-py
@@ -20,6 +19,11 @@
   - tensorflowlite
 - weatherSimple
   - none
+- clock
+  - pyame
+  - numpy
+  
+
 ## Configuration
 The piAssistant is configuered via the config.json file.
 ### General structure
@@ -54,6 +58,9 @@ The piAssistant is configuered via the config.json file.
 "weatherSimple":{"apiKey":"apiKey for openweathermap.org",
                  "location":"name of the location you want to have weather information on"}
 ```
-
+- clock
+```json
+"clock":{"no configuration needed"}
+```
 ### Run
 After setting everything  up to your wishes just run the example.py file
