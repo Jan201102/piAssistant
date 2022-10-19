@@ -1,31 +1,39 @@
-import subprocess
 import logging
-from signals.Isignals import Isignals
+from Isignals import Isignals
+
+from time import sleep
+try:
+    import RPi.GPIO as gpio
+except (RuntimeError, ModuleNotFoundError):
+    import fake_rpigpio.utils
+    fake_rpigpio.utils.install()
+    import RPi.GPIO as gpio
 
 
 class Signals(Isignals):
-    def __init__(self,**config):
-        if "host" in config.keys():
-            self.host = config["host"]
-        else:
-            self.host = "192.168.2.107"
-        if "light" in config.keys():
-            self.lightName = config["light"]
-        else:
-            self.lightName = "Regal/setRGBW"
-        self.value = "000000ff"
-
+    def __init__(self, **config):
+        self.g = 40
+        self.b = 38
+        gpio.setmode(gpio.BOARD)
+        gpio.setup(self.g,gpio.OUT)
+        gpio.setup(self.b,gpio.OUT)
+        gpio.setwarnings(False)
+        gpio.output(self.b,False)
+        gpio.output(self.g,False)
 
     def activate(self):
-        logging.debug("lighting up Signal")
-        try:
-            subprocess.call("mosquitto_pub -h {} -t {} -m {}".format(self.host, self.lightName, self.value), shell=True)
-        except:
-            logging.warning("mqtt command failed")
+        logging.debug("light up LED")
+        gpio.output(self.b, True)
+        gpio.output(self.g, True)
 
     def deactivate(self):
-        logging.debug("turning off signal")
-        try:
-            subprocess.call("mosquitto_pub -h {} -t {} -m {}".format(self.host, self.lightName, "00000000"), shell=True)
-        except:
-            logging.warning("mqtt command failed")
+        logging.debug("LED off")
+        gpio.output(self.b, False)
+        gpio.output(self.g, False)
+
+
+if __name__ == "__main__":
+    signal = Signals()
+    signal.activate()
+    sleep(2)
+    signal.deactivate()
