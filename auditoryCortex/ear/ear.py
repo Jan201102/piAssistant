@@ -12,28 +12,31 @@ class Ear(IearGateway):
     CHANNELS = 1
     p = pyaudio.PyAudio()
 
-    def __init__(self, **kwargs):
-        self.mic_id = None
+    def __init__(self, micId = None,  **kwargs):
+        logging.debug("starting Ear...")
         self.sampRate = 16000
         self.file = None
         self.recorder = Recorder(self.sampRate, self.CHANNELS, self.p.get_sample_size(self.FORMAT))
-        for i in range(self.p.get_device_count()):
-            try:
-                if self.p.is_format_supported(self.sampRate, input_device=i, input_format=self.FORMAT,
-                                              input_channels=self.CHANNELS):
-                    self.mic_id = i
-            except ValueError:
-                logging.debug("{} not supporting 16000khz".format(i))
-        if self.mic_id is None:
-            logging.warning('Attention: no mic plugged in!')
-        self.mic_id = 1
+
+        if micId:
+            self.mic_id = micId
+        else:
+            for i in range(self.p.get_device_count()):
+                try:
+                    if self.p.is_format_supported(self.sampRate, input_device=i, input_format=self.FORMAT,
+                                                  input_channels=self.CHANNELS):
+                        print(self.p.get_device_info_by_index(i))
+                except ValueError:
+                    logging.debug("{} not supporting 16000khz".format(i))
+            self.mic_id = int(input("please Input device index of preferred mic: "))
+
         self.stream = self.p.open(format=self.FORMAT,
                                   channels=self.CHANNELS,
                                   input_device_index=self.mic_id,
                                   rate=int(self.sampRate),
                                   input=True,
                                   frames_per_buffer=self.CHUNK)
-
+        logging.debug("Ear Ready")
     def __del__(self):
         self.stream.close()
 
