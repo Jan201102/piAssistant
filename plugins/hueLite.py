@@ -6,6 +6,7 @@ from hue_api import HueApi
 import logging
 from time import sleep
 import numpy as np
+import zahlwort2num as w2n
 class Plugin():
     def __init__(self,memory,**kwargs):
         # initializing model
@@ -44,6 +45,14 @@ class Plugin():
         self.lights = [light for light in self.api.fetch_lights()]
 
     def process(self,command):
+        # filter numbers
+        dimValue = 0
+        for word in command.split(" "):
+            try:
+                w2n.convert(word)
+                dimValue = w2n.convert(word)
+            except:
+                pass
         #preprocessing
         data = {}
         splitCommand = list(command)
@@ -65,7 +74,7 @@ class Plugin():
                     logging.debug("{}".format(light.name))
                     if brightness >= 1:
                         light.set_on()
-                        light.set_brightness(int(brightness)*25)
+                        light.set_brightness(int(255*dimValue/100))
                         data["value"] = int(brightness)
                     else:
                         light.set_off()

@@ -6,6 +6,7 @@ from hue_api import HueApi
 import tensorflow as tf
 import logging
 from time import sleep
+import zahlwort2num as w2n
 
 class Plugin:
     def __init__(self, memory, **kwargs):
@@ -34,6 +35,15 @@ class Plugin:
         self.lights = [light for light in self.api.fetch_lights()]
 
     def process(self, command):
+        # filter numbers
+        dimValue = 0
+        for word in command.split(" "):
+            try:
+                w2n.convert(word)
+                dimValue = w2n.convert(word)
+            except:
+                pass
+        print(dimValue)
         data= {}
         splitCommand = list(command)
         tokenCommand = tf.keras.preprocessing.sequence.pad_sequences([[ord(char) for char in splitCommand]],maxlen=256)
@@ -44,7 +54,7 @@ class Plugin:
                     logging.debug("{}".format(light.name))
                     if pred[1] >= 1:
                         light.set_on()
-                        light.set_brightness(int(pred[1])*25)
+                        light.set_brightness(int(255*dimValue/100))
                         data["value"] = int(pred[1])
                     else:
                         light.set_off()
