@@ -1,3 +1,5 @@
+import logging
+
 from auditoryCortex.vosk_text import *
 from auditoryCortex.pocketsphinx_kws import *
 from IauditoryCortexGateway import *
@@ -5,10 +7,12 @@ from auditoryCortex.ear.ear import *
 
 class AuditoryCortex(IauditoryCortexGateway):
     def __init__(self,*args,**kwargs):
-        self.ear = Ear()
+        logging.debug("Starting Auditory cortex...")
+        self.ear = Ear(**kwargs)
         if self.ear.mic_id != None:
             self.text = VoskText(self.ear, kwargs["voskModel"])
             self.kws = PocketsphinxKWS(self.ear,**kwargs)
+        logging.debug("Auditory cortex ready")
 
     def listen(self,file=None,record=False,verbose=1):
         if self.ear.mic_id != None:
