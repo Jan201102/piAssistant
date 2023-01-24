@@ -13,7 +13,7 @@ class Ear(IearGateway):
     p = pyaudio.PyAudio()
 
     def __init__(self, micId = None,  **kwargs):
-        logging.debug("starting Ear...")
+        logging.info("starting Ear...")
         self.sampRate = 16000
         self.file = None
         self.recorder = Recorder(self.sampRate, self.CHANNELS, self.p.get_sample_size(self.FORMAT))
@@ -36,7 +36,7 @@ class Ear(IearGateway):
                                   rate=int(self.sampRate),
                                   input=True,
                                   frames_per_buffer=self.CHUNK)
-        logging.debug("Ear Ready")
+        logging.info("Ear Ready")
     def __del__(self):
         self.stream.close()
 

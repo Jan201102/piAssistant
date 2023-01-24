@@ -7,6 +7,7 @@ import json
 
 class VoskText():
     def __init__(self,ear, models, **kwargs):
+        logging.info("loading vosk model...")
         self.ear = ear
         SetLogLevel(-1)
         for model in models:
@@ -14,6 +15,7 @@ class VoskText():
                 logging.error("cant't find: " +model)
                 exit(0)
         self.decoder =models
+        logging.info("Done.")
 
     @property
     def decoder(self):

@@ -15,9 +15,9 @@ class AudioThread:
     def stop(self, verbose=0):
         self.run = False
         try:
-            logging.info('waiting for Thread to finish...')
+            logging.debug('waiting for Thread to finish...')
             self.thread.join()
-            logging.info('Done')
+            logging.debug('Done')
         except:
             pass
 

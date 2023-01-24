@@ -1,15 +1,17 @@
 import logging
-from pocketsphinx.pocketsphinx import *
+from pocketsphinx import *
 import os
 import time
-
+import logging
 
 class PocketsphinxKWS:
-    def __init__(self, ear, **kwargs):
+    def __init__(self, ear, sensitivity,**kwargs):
+        logging.info("Loading pocketsphinx model...")
         self.start_sec = 0
-        self.sensitivity = kwargs['sensitivity']
+        self.sensitivity = sensitivity
         self.kws_decoder = kwargs
         self.ear = ear
+        logging.info("Done")
 
     @property
     def kws_decoder(self):
@@ -36,13 +38,7 @@ class PocketsphinxKWS:
         if dictionary is None:
             raise ValueError('dictionary for pocketsphinx not found')
 
-        config = Decoder.default_config()
-        config.set_string('-hmm', hmm)
-        config.set_string('-dict', dictionary)
-        config.set_string('-keyphrase', name)
-        config.set_float('-kws_threshold', self.sensitivity)
-        config.set_string('-logfn', 'nul')
-        self.__kws_decoder = Decoder(config)
+        self.__kws_decoder = Decoder(hmm = hmm, dict = dictionary, keyphrase = name, kws_threshold = self.sensitivity)
 
     def wait(self):
         self.ear.start_audio(threading=False)

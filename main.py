@@ -9,8 +9,8 @@ import json
 
 class Main:
     def __init__(self, *args, **kwargs):
-        logging.basicConfig(level=logging.DEBUG)
-
+        logging.basicConfig(format= "%(asctime)6s %(message)s",level=logging.INFO)
+        logging.info("Starting Assistant...")
         with open(kwargs["configFile"],"r") as file:
             config = json.load(file)
 
@@ -27,6 +27,8 @@ class Main:
             plugin = plugin_module.Plugin(self.memory, **config["plugins"][import_plugin])
             self.plugins.append(plugin)
 
+        logging.info("Assistant ready")
+
     def process(self, text):
         for plugin in self.plugins:
             result = plugin.process(text)
@@ -39,9 +41,10 @@ class Main:
             logging.info('listening...')
 
             if self.audiCort.wait():
+                logging.info("Key word detected")
                 self.signals.activate()
                 command = self.audiCort.listen(record=True,verbose=0)
-                logging.info(command)
+                logging.info("understood: " + command[0][0]["text"])
                 self.process(command[0][0]['text'])
                 self.memory.memorize_audio(command[1], command[0][0]['text'])
                 self.signals.deactivate()
