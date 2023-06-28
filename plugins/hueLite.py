@@ -1,21 +1,37 @@
 """
 Phillips HUe pulgin with TFlite
 """
+
 import tflite_runtime.interpreter as tflite
 from hue_api import HueApi
 import logging
 from time import sleep
 import numpy as np
-import zahlwort2num as w2n
-class Plugin():
-    def __init__(self,memory,**kwargs):
-        # initializing model
-        self.interpreter = tflite.Interpreter(model_path="./plugins/light_controll.tflite")
-        self.interpreter.allocate_tensors()
+import json
 
-        self.input_details = self.interpreter.get_input_details()
-        self.output_details = self.interpreter.get_output_details()
-        print(self.output_details)
+
+class Plugin:
+    def __init__(self, memory, **kwargs):
+        # initializing model
+        self.encoder = tflite.Interpreter("/content/drive/MyDrive/deeplearning/seq_to_Seq/Hue/hue_encoder_LSTM.tflite")
+        self.decoder = tflite.Interpreter("/content/drive/MyDrive/deeplearning/seq_to_Seq/Hue/hue_decoder_LSTM.tflite")
+
+        self.encoder.allocate_tensors()
+        self.decoder.allocate_tensors()
+
+        self.encoderInputDetails = self.encoder.get_input_details()
+        self.decoderInputDetails = self.decoder.get_input_details()
+        self.encoderOutputDetails = self.encoder.get_output_details()
+        self.decoderOutputDetails = self.decoder.get_output_details()
+
+        with open("/content/drive/MyDrive/deeplearning/seq_to_Seq/Hue/hue_tokenizer.json", "r") as f:
+            all = json.loads(f.read())
+            self.vocab = json.loads(all["config"]["word_index"])
+
+        with open("/content/drive/MyDrive/deeplearning/seq_to_Seq/Hue/hue_cmdtokenizer.json", "r") as f:
+            all = json.loads(f.read())
+            self.cmdWordIndex = json.loads(all["config"]["word_index"])
+            self.cmdIndexWord = json.loads(all["config"]["index_word"], parse_int=True)
 
         # initializing hue
 
@@ -44,48 +60,90 @@ class Plugin():
 
         self.lights = [light for light in self.api.fetch_lights()]
 
-    def process(self,command):
-        # filter numbers
-        dimValue = 0
-        for word in command.split(" "):
-            try:
-                w2n.convert(word)
-                dimValue = w2n.convert(word)
-            except:
-                pass
-        #preprocessing
-        data = {}
-        splitCommand = list(command)
-        zeros = np.zeros((1,256),np.int32)
-        for i in range(len(splitCommand)):
-            pos = 256-len(splitCommand)+i
-            zeros[0][pos] = ord(splitCommand[i])
-        tokenCommand = zeros
-        #model prediction
-        self.interpreter.set_tensor(self.input_details[0]['index'], tokenCommand)
-        self.interpreter.invoke()
-        lightType = self.interpreter.get_tensor(self.output_details[1]['index']).argmax()
-        brightness = self.interpreter.get_tensor(self.output_details[0]['index'])
+    def vectorizeInput(self, sentence, length):
+        x = np.zeros(shape=(1, length), dtype=np.float32)
+        words = sentence.split()
+        for i, word in enumerate(words):
+            if word in self.vocab.keys():
+                x[0][i] = int(self.vocab[word])
+        return x
 
-        #switch lights
-        if lightType != 0:
-            for light in self.lights:
-                if light.name.lower() in command.replace('ß','ss') or lightType == 2:
-                    logging.debug("{}".format(light.name))
-                    if brightness >= 1:
-                        light.set_on()
-                        light.set_brightness(int(255*dimValue/100))
-                        data["value"] = int(brightness)
+    def predictCorrect(self, text, encoder, decoder):
+        input = self.vectorizeInput(text, 50)
+        encoder.set_tensor(self.encoderInputDetails[0]['index'], input)
+        encoder.invoke()
+        sequences = encoder.get_tensor(self.encoderOutputDetails[2]['index'])
+        h = encoder.get_tensor(self.encoderOutputDetails[1]['index'])
+        c = encoder.get_tensor(self.encoderOutputDetails[0]['index'])
+
+        decoder_seq = np.zeros((1, 1), dtype="float32")
+        decoder_seq[0, 0] = np.float32(self.cmdWordIndex["<start>"])
+        plain_text = ""
+        for i in range(50):
+            decoder.set_tensor(self.decoderInputDetails[1]['index'], sequences)
+            decoder.set_tensor(self.decoderInputDetails[0]['index'], h)
+            decoder.set_tensor(self.decoderInputDetails[3]['index'], c)
+            decoder.set_tensor(self.decoderInputDetails[2]['index'], decoder_seq)
+
+            decoder.invoke()
+
+            char_index = np.argmax(decoder.get_tensor(self.decoderOutputDetails[3]['index'])[0, -1, :])
+            h = decoder.get_tensor(self.decoderOutputDetails[2]['index'])
+            c = decoder.get_tensor(self.decoderOutputDetails[1]['index'])
+
+            if char_index == 0:
+                return plain_text
+            plain_text += " " + self.cmdIndexWord[str(char_index)]
+
+            decoder_seq = np.zeros((1, 1), dtype="float32")
+            decoder_seq[0, 0] = char_index
+
+    def output_to_json(self, output):
+        logging.debug("Converting result to Json...")
+        try:
+            jsonS = '{'
+            if output != "None":
+                cmd = output.split()
+                for word in cmd:
+                    if word == ":":
+                        jsonS += " : "
+                    elif word == ",":
+                        jsonS += " , "
+                    elif word.isnumeric():
+                        jsonS += word
                     else:
-                        light.set_off()
-                        data["value"] = 0
-        else:
-            data["label"] = "none"
+                        jsonS += '"' + word + '"'
+            jsonS += "}"
+            js = json.loads(jsonS)
+            logging.debug("Done")
+        except:
+            js = json.loads("{}")
+            logging.debug("Model generated no valid result")
 
-        if lightType == 2:
-            data["label"] = "all"
+        return js
+
+    def setLight(self, light, action):
+        logging.debug("setting light {}".format(light.name))
+        if action == "on":
+            light.set_on()
+        elif action == "off":
+            light.set_off()
         else:
-            data["label"] = "specific"
-        data["text"] = command
+            light.set_brightness(int(action * 255 / 100))
+
+    def process(self, command):
+        logging.debug("running Hue-Inference...")
+        modelOutput = self.predictCorrect(command, self.encoder, self.decoder)
+        logging.debug("Done")
+        jsonquery = self.output_to_json(modelOutput)
+        # switch lights
+        for lightcommand in jsonquery.items():
+            if lightcommand[0] == "all" or lightcommand[0] == " ":
+                for light in self.lights:
+                    self.setLight(light, lightcommand[1])
+            else:
+                for light in self.lights:
+                    if light.name.lower() == lightcommand[0]:
+                        self.setLight(light, lightcommand[1])
+        data = {"command": command, "result": modelOutput}
         self.memory.memorize("hue", **data)
-
