@@ -6,9 +6,11 @@ enables a timer with a range of 2 to 99 minutes.
 import threading
 import pygame
 import time
+import os
 
 class Plugin:
     def __init__(self,*args,**kwargs):
+        self.templateFoler = os.path.join(os.path.dirname(__file__),"templates")
         self.einer = ['null', 'eins', 'zwei', 'drei', 'vier', 'fünf', 'sechs', 'sieben', 'acht', 'neun']
         self.zehner = ['null','zehn', 'zwanzig', 'dreißig', 'vierzig', 'fünfzig', 'sechzig', 'siebzig', 'achtzig', 'neunzig']
         self.faktor = ['hundert', 'tausend']
@@ -20,7 +22,6 @@ class Plugin:
         keywords = ["timer","wecker"]
         one = 0
         ten = 0
-        number = None
         testKeyword = False
         for keyword in keywords:
             if keyword in command:
@@ -53,15 +54,9 @@ class Plugin:
 
 
     def alarm(self,duration):
-        for _ in range(duration*60):
+        for _ in range(int(duration*60)):
             time.sleep(1)
         print("alarm")
         pygame.mixer.init()
-        pygame.mixer.music.load('./plugins/alarm_classic.mp3')
+        pygame.mixer.music.load(os.path.join(self.templateFoler,"alarm_classic.mp3"))
         pygame.mixer.music.play()
-
-if __name__ == "__main__":
-    c = Plugin()
-    for i in ["fünf","drei","dreiundzwanzig","fünfundsechzig"]:
-        num = c.process("dummy",i+" timer")
-        print(num)

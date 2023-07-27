@@ -1,7 +1,7 @@
 import pyaudio
-from auditoryCortex.IearGateway import *
-from auditoryCortex.ear.AudioThread import *
-from auditoryCortex.ear.recorder import Recorder
+from piassistant.auditoryCortex.IearGateway import *
+from piassistant.auditoryCortex.ear.AudioThread import *
+from piassistant.auditoryCortex.ear.recorder import Recorder
 import wave
 import time
 

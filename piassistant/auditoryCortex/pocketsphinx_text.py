@@ -5,8 +5,6 @@ from pocketsphinx.pocketsphinx import *
 
 from os import path,mkdir
 
-from auditoryCortex.ear.ear import *
-
 
 class PocketsphinxText():
     def __init__(self,ear, model, **kwargs):

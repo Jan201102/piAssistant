@@ -1,5 +1,5 @@
 import logging
-from Isignals import Isignals
+from .Isignals import Isignals
 
 from time import sleep
 try:

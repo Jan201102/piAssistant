@@ -1,9 +1,9 @@
 import logging
 
-from auditoryCortex.vosk_text import *
-from auditoryCortex.pocketsphinx_kws import *
-from IauditoryCortexGateway import *
-from auditoryCortex.ear.ear import *
+from .vosk_text import *
+from .pocketsphinx_kws import *
+from piassistant.IauditoryCortexGateway import *
+from .ear.ear import *
 
 class AuditoryCortex(IauditoryCortexGateway):
     def __init__(self,*args,**kwargs):
