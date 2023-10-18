@@ -8,29 +8,94 @@ import numpy as np
 import json
 import logging
 from time import sleep
-import zahlwort2num as w2n
+import os
+
+
+class CommandConverter:
+    def __init__(self):
+        templateFolder = os.path.join(os.path.dirname(__file__), "templates")
+
+        with open(os.path.join(templateFolder, "hue_cmdtokenizer_V0_1.json"), "r") as f:
+            self.cmdTokenizer = tf.keras.preprocessing.text.tokenizer_from_json(f.read())
+        with open(os.path.join(templateFolder, "hue_tokenizer_V0_1.json"), "r") as f:
+            self.tokenizer = tf.keras.preprocessing.text.tokenizer_from_json(f.read())
+
+        self.encoder = tf.keras.models.load_model(os.path.join(templateFolder, "hue_encoder_LSTM_V0_1.h5"))
+        self.decoder = tf.keras.models.load_model(os.path.join(templateFolder, "hue_decoder_LSTM_V0_1.h5"),
+                                                  custom_objects={"AttentionLayer": AttentionLayer})
+
+    def run_model(self,text,len_seq=50):
+        x = self.tokenizer.texts_to_sequences([text])
+        x = tf.keras.preprocessing.sequence.pad_sequences(x, 50, padding='post', truncating='post')
+        y = self.encoder.predict(x)
+        sequences = y['encoderOutput']
+        h = y["encoderStateH"]
+        c = y["encoderStateC"]
+        decoder_seq = np.zeros((1, 1))
+        decoder_seq[0, 0] = self.cmdTokenizer.word_index['<start>']
+        plain_text = ""
+        for i in range(len_seq):
+            out = self.decoder.predict(
+                {"encoderStates": sequences, "decoderStateH": h, "decoderStateC": c, "decoderIn": decoder_seq},verbose = False)
+
+            output_char = out["pred"]
+            attention = out["attn"]
+            h = out["stateHOut"]
+            c = out["stateCOut"]
+            char_index = np.argmax(output_char[0, -1, :])
+            if char_index == 0:
+                return plain_text
+            plain_text += " " + self.cmdTokenizer.index_word[char_index]
+
+            decoder_seq = np.zeros((1, 1))
+            decoder_seq[0, 0] = char_index
+        return plain_text
+    def output_to_json(self, output):
+        logging.debug("Converting result to Json...")
+
+        try:
+            jsonS = '{'
+            if output != "None":
+                items = output.split(",")
+                for index,item in enumerate(items):
+                    light = item.split(":")[0]
+                    command = item.split(":")[1]
+                    jsonS += '"' + light.strip() +'":'
+                    if command.strip().isnumeric():
+                        jsonS += command
+                    else:
+                        jsonS += '"' + command.strip() + '"'
+                    if index < len(items)-1:
+                        jsonS += ","
+            jsonS += "}"
+            js = json.loads(jsonS)
+            logging.debug("Done")
+        except:
+            js = json.loads("{}")
+            logging.debug("Model generated no valid result")
+
+        return js
+
+    def convert(self, command):
+        modelOutput = self.run_model(command)
+        jsonquery = self.output_to_json(modelOutput)
+        return jsonquery
 
 class Plugin:
     def __init__(self, memory, **kwargs):
         self.memory = memory
         self.api = HueApi()
-        with open("./plugins/hue_cmdtokenizer.json","r") as f:
-            self.cmdTokenizer = tf.keras.preprocessing.text.tokenizer_from_json(f.read())
-        with open("./plugins/hue_tokenizer.json","r") as f:
-            self.tokenizer = tf.keras.preprocessing.text.tokenizer_from_json(f.read())
-        self.encoder =  tf.keras.models.load_model("./plugins/hue_encoder.h5")
-        self.decoder =  tf.keras.models.load_model("./plugins/hue_decoder.h5",custom_objects={"AttentionLayer":AttentionLayer})
-
+        self.converter = CommandConverter()
         try:
             self.api.load_existing()
             self.lights = [light for light in self.api.fetch_lights()]
-        except :
+        except:
             if "ip" in kwargs.keys():
                 ip = kwargs["ip"]
                 print("please press the connect button on th huebridge")
             else:
                 ip = input('press connect-button on huebridge and enter ip-address:')
-            print("connecting")
+            print("connecting...")
             for _ in range(20):
                 try:
                     self.api.create_new_user(ip)
@@ -41,73 +106,35 @@ class Plugin:
                     sleep(1)
 
         self.lights = [light for light in self.api.fetch_lights()]
-    def predict_correct(self,text, encoder, decoder, text_tokenizer, cmd_tokenizer, len_seq=50):
-        x = text_tokenizer.texts_to_sequences([text])
-        x = tf.keras.utils.pad_sequences(x, 50, padding='post', truncating='post')
-        sequences, state = encoder.predict(x)
 
-        decoder_seq = np.zeros((1, 1))
-        decoder_seq[0, 0] = cmd_tokenizer.word_index['<start>']
-        attn = []
-        plain_text = ""
-        for i in range(len_seq):
-            output_char, attention, dec_state = decoder.predict(
-                [sequences, state, decoder_seq])
-            char_index = np.argmax(output_char[0, -1, :])
-            if char_index == 0:
-                return plain_text
-            plain_text += " " + cmd_tokenizer.index_word[char_index]
-            print(plain_text)
-
-            decoder_seq = np.zeros((1, 1))
-            decoder_seq[0, 0] = char_index
-            state = dec_state
-            attn.append(attention)
-
-        return plain_text
-
-    def output_to_json(self,output):
-        try:
-            jsonS = '{'
-            if output != "None":
-                cmd = output.split()
-                for word in cmd:
-                    if word == ":":
-                        jsonS += " : "
-                    elif word == ",":
-                        jsonS += " , "
-                    elif word.isnumeric():
-                        jsonS += word
-                    else:
-                        jsonS += '"' + word + '"'
-            jsonS += "}"
-            js = json.loads(jsonS)
-        except:
-            js = json.loads("{}")
-            logging.debug("Model generated no valid result")
-
-        return js
-
-    def setLight(self,light,action):
+    def setLight(self, light, action):
+        logging.debug("setting light {}".format(light.name))
         if action == "on":
             light.set_on()
         elif action == "off":
             light.set_off()
         else:
-            light.set_brightness(int(action*255/100))
+            light.set_on()
+            light.set_brightness(int(action * 255 / 100))
+
     def process(self, command):
-        modelOutput = self.predict_correct(command,self.encoder,self.decoder,self.tokenizer,self.cmdTokenizer)
-        jsonquery = self.output_to_json(modelOutput)
+        logging.debug("running Hue-Inference...")
+        jsonquery = self.converter.convert(command)
+        logging.debug(jsonquery)
+        logging.debug("Done")
+
         for lightcommand in jsonquery.items():
-            if lightcommand[0] == "all":
+            if lightcommand[0].strip() == "all":
                 for light in self.lights:
-                    self.setLight(light,lightcommand[1])
+                    self.setLight(light, lightcommand[1])
             else:
                 for light in self.lights:
                     if light.name.lower() == lightcommand[0]:
-                        self.setLight(light,lightcommand[1])
-        data ={"command":command,"result":modelOutput}
-        self.memory.memorize("hue",**data)
+                        self.setLight(light, lightcommand[1])
+        data = {"command": command, "result": jsonquery}
+        if self.memory is not None:
+            self.memory.memorize("hue", **data)
+
 
 from keras.layers import Layer
 from keras import backend as K
