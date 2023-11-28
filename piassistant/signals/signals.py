@@ -1,7 +1,6 @@
 import logging
 from .Isignals import Isignals
 
-from time import sleep
 try:
     import RPi.GPIO as gpio
 except (RuntimeError, ModuleNotFoundError):
@@ -15,11 +14,11 @@ class Signals(Isignals):
         self.g = 40
         self.b = 38
         gpio.setmode(gpio.BOARD)
-        gpio.setup(self.g,gpio.OUT)
-        gpio.setup(self.b,gpio.OUT)
+        gpio.setup(self.g, gpio.OUT)
+        gpio.setup(self.b, gpio.OUT)
         gpio.setwarnings(False)
-        gpio.output(self.b,False)
-        gpio.output(self.g,False)
+        gpio.output(self.b, False)
+        gpio.output(self.g, False)
 
     def activate(self):
         logging.debug("light up LED")
@@ -30,10 +29,3 @@ class Signals(Isignals):
         logging.debug("LED off")
         gpio.output(self.b, False)
         gpio.output(self.g, False)
-
-
-if __name__ == "__main__":
-    signal = Signals()
-    signal.activate()
-    sleep(2)
-    signal.deactivate()
