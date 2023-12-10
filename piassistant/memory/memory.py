@@ -2,15 +2,16 @@ import logging
 import os
 import pandas as pd
 import shutil
+from os import path
 
 
 class Memory:
-    def __int__(self):
-        pass
+    def __init__(self):
+        self.memory_folder = path.dirname(__file__)
 
     def memorize(self, plugin, **data):
-        if plugin+".csv" in os.listdir("./memory"):
-            dataframe = pd.read_csv("./memory/"+plugin+".csv")
+        if plugin+".csv" in os.listdir(self.memory_folder):
+            dataframe = pd.read_csv(path.join(self.memory_folder, plugin+".csv"))
         else:
             dataframe = pd.DataFrame()
         logging.debug(dataframe)
@@ -20,9 +21,9 @@ class Memory:
         logging.debug(dataframe)
         dataframe = dataframe.append(data, ignore_index=True)
 
-        dataframe.to_csv("./memory/"+plugin+".csv",index=False)
+        dataframe.to_csv(path.join(self.memory_folder, plugin+".csv"),index=False)
 
     def memorize_audio(self, wavfile, text):
-        shutil.move(wavfile, "./memory/wavFiles/")
-        with open("./memory/transcriptions.csv", "a") as out:
+        shutil.move(wavfile,path.join(self.memory_folder,"wavFiles/"))
+        with open(path.join(self.memory_folder,"transcriptions.csv"), "a") as out:
             out.write(wavfile+";"+text+"\n")

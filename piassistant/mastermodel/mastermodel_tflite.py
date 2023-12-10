@@ -36,28 +36,28 @@ class Mastermodel(Imastermodel):
                 x[0][i] = int(self.vocab[word])
         return x
 
-    def predictCorrect(self, text, encoder, decoder):
+    def run_mastermodel(self, text, len_seq=50):
         input = self.vectorizeInput(text, 50)
-        encoder.set_tensor(self.encoderInputDetails[0]['index'], input)
-        encoder.invoke()
-        sequences = encoder.get_tensor(self.encoderOutputDetails[2]['index'])
-        h = encoder.get_tensor(self.encoderOutputDetails[1]['index'])
-        c = encoder.get_tensor(self.encoderOutputDetails[0]['index'])
+        self.encoder.set_tensor(self.encoderInputDetails[0]['index'], input)
+        self.encoder.invoke()
+        sequences = self.encoder.get_tensor(self.encoderOutputDetails[2]['index'])
+        h = self.encoder.get_tensor(self.encoderOutputDetails[1]['index'])
+        c = self.encoder.get_tensor(self.encoderOutputDetails[0]['index'])
 
         decoder_seq = np.zeros((1, 1), dtype="float32")
         decoder_seq[0, 0] = np.float32(self.cmdWordIndex["<start>"])
         plain_text = ""
         for i in range(50):
-            decoder.set_tensor(self.decoderInputDetails[1]['index'], sequences)
-            decoder.set_tensor(self.decoderInputDetails[0]['index'], h)
-            decoder.set_tensor(self.decoderInputDetails[3]['index'], c)
-            decoder.set_tensor(self.decoderInputDetails[2]['index'], decoder_seq)
+            self.decoder.set_tensor(self.decoderInputDetails[1]['index'], sequences)
+            self.decoder.set_tensor(self.decoderInputDetails[0]['index'], h)
+            self.decoder.set_tensor(self.decoderInputDetails[3]['index'], c)
+            self.decoder.set_tensor(self.decoderInputDetails[2]['index'], decoder_seq)
 
-            decoder.invoke()
+            self.decoder.invoke()
 
             char_index = np.argmax(decoder.get_tensor(self.decoderOutputDetails[3]['index'])[0, -1, :])
-            h = decoder.get_tensor(self.decoderOutputDetails[2]['index'])
-            c = decoder.get_tensor(self.decoderOutputDetails[1]['index'])
+            h = self.decoder.get_tensor(self.decoderOutputDetails[2]['index'])
+            c = self.decoder.get_tensor(self.decoderOutputDetails[1]['index'])
 
             if char_index == 0:
                 return plain_text

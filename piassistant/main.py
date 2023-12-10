@@ -31,9 +31,9 @@ class Main:
                 backend = "tflite"
 
         if backend == "tensorflow":
-            mastermodel_class = importlib.import_module("mastermodel.mastermodel",".")
+            mastermodel_class = importlib.import_module("piassistant.mastermodel.mastermodel",".")
         elif backend == "tflite":
-            mastermodel_class = importlib.import_module("mastermodel.mastermodel_tflite",".")
+            mastermodel_class = importlib.import_module("piassistant.mastermodel.mastermodel_tflite",".")
 
         self.mastermodel = mastermodel_class.Mastermodel()
 
