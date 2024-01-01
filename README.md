@@ -6,6 +6,8 @@
 - pyaudio
 - pocketsphinx
 - tensorflow or tensorflow lite
+### Other requiered packages
+- neopixel: see Adafruits installation guide for neopixel in Python
 ### Requiered models
 - vosk model of your choice: https://alphacephei.com/vosk/models
 - pocketsphinx model of your choice: https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/

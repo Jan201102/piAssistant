@@ -1,5 +1,5 @@
 import logging
-from .Isignals import Isignals
+from piassistant.Isignals import Isignals
 import board
 import neopixel
 from multiprocessing import Process
@@ -10,26 +10,31 @@ class Signals(Isignals):
     def __init__(self, **config):
         pixelPin = board.D18
         self.numPixels = 24
-        ORDER = neopixel.GRB
-        self.pixels = neopixel.NeoPixel(pixelPin, self.numPixels, brightness=0.2, auto_write=False, pixel_order=ORDER)
-        self.process = Process(target=self.wait)
-        self.process.start()
+        self.ORDER = neopixel.GRB
+        self.pixels = neopixel.NeoPixel(pixelPin, self.numPixels, brightness=0.2, auto_write=False, pixel_order=self.ORDER)
+        self.p = Process(target=self.wait)
+        self.p.start()
         
     def wait(self):
         while True:
-            pass
+            time.sleep(1)
     
     def PixelDriver(self, state: str):
         self.pixels.fill((0, 0, 0))
         self.pixels.show()
         if state == "activate":
-            for i in range(self.numPixels):
-                self.pixels[i] = (255, 0, 0)
+            for i in range(int(self.numPixels/2)):
+                self.pixels[i] = (0, 255, 125)
+                self.pixels[self.numPixels-1-i] = (0, 255, 125)
                 self.pixels.show()
-                time.sleep(0.05)
+                time.sleep(0.02)
                 
         elif state == "deactivate":
             pass
+        
+        elif state == "processing":
+            while True:
+                self.rainbow_cycle(0.003)
         
         elif state == "startup":
             while True:
@@ -52,46 +57,84 @@ class Signals(Isignals):
     
 
     def activate(self):
-        self.process.terminate()
-        self.process.join()
+        self.p.terminate()
+        self.p.join()
         self.p = Process(target=self.PixelDriver, args=("activate",))
         self.p.start()
         logging.debug("light up LED")
 
     def deactivate(self):
-        self.process.terminate()
-        self.process.join()
+        self.p.terminate()
+        self.p.join()
         self.p = Process(target=self.PixelDriver, args=("deactivate",))
         self.p.start()
         logging.debug("turn off LED")
         
     def showProcessing(self):
-        self.process.terminate()
-        self.process.join()
+        self.p.terminate()
+        self.p.join()
         self.p = Process(target=self.PixelDriver, args=("processing",))
         self.p.start()
         
     def showStartup(self):
-        self.process.terminate()
-        self.process.join()
+        self.p.terminate()
+        self.p.join()
         self.p = Process(target=self.PixelDriver, args=("startup",))
         self.p.start()
     
     def showStartupSuccess(self):
-        self.process.terminate()
-        self.process.join()
-        self.p = Process(target=self.PixelDriver, args=("startupSucess",))
+        self.p.terminate()
+        self.p.join()
+        self.p = Process(target=self.PixelDriver, args=("startupSuccess",))
         self.p.start()
-    
+        
+
+    def wheel(self, pos):
+        # Input a value 0 to 255 to get a color value.
+        # The colours are a transition r - g - b - back to r.
+        if pos < 0 or pos > 255:
+            r = g = b = 0
+        elif pos < 85:
+            r = int(pos * 3)
+            g = int(255 - pos * 3)
+            b = 0
+        elif pos < 170:
+            pos -= 85
+            r = int(255 - pos * 3)
+            g = 0
+            b = int(pos * 3)
+        else:
+            pos -= 170
+            r = 0
+            g = int(pos * 3)
+            b = int(255 - pos * 3)
+        return (r, g, b) if self.ORDER in (neopixel.RGB, neopixel.GRB) else (r, g, b, 0)
+
+
+    def rainbow_cycle(self, wait):
+        for j in range(255):
+            for i in range(self.numPixels):
+                pixel_index = (i * 256 // self.numPixels) + j
+                self.pixels[i] = self.wheel(pixel_index & 255)
+            self.pixels.show()
+            time.sleep(wait)
+        
 
 if __name__ == "__main__":
+    print("start")
     s = Signals()
     s.showStartup()
     time.sleep(5)
+    print("StartSucess")
     s.showStartupSuccess()
     time.sleep(5)
+    print("activate")
     s.activate()
     time.sleep(5)
+    print("processing")
     s.showProcessing()
     time.sleep(5)
+    print("off")
     s.deactivate()
+    time.sleep(1)
+    s.p.terminate()
