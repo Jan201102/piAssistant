@@ -1,0 +1,9 @@
+{"assistant":{"voskModel": ["/home/pi/vosk-model"],
+              "sensitivity":50,
+              "pocketsphinxModel":"/home/pi/cont-de",
+              "name": "computer",
+	            "host": "127.0.0.1",
+              "micId":1},
+"plugins": {},
+  "apps": {"hue": {"ip":"192.168.2.106"},"timer": {}}
+}

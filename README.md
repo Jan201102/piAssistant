@@ -7,7 +7,12 @@
 - pocketsphinx
 - tensorflow or tensorflow lite
 ### Other requiered packages
-- neopixel: see Adafruits installation guide for neopixel in Python
+- neopixel: see Adafruits installation guide for neopixel in Python. To be able to run neopixel without root priviliges add 
+```
+dtparam=spi=on
+enable_uart=1
+```
+to `/boot/config.txt` and connect neopixel to `GPIO10`.
 ### Requiered models
 - vosk model of your choice: https://alphacephei.com/vosk/models
 - pocketsphinx model of your choice: https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/

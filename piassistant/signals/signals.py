@@ -8,7 +8,7 @@ import time
 
 class Signals(Isignals):
     def __init__(self, **config):
-        pixelPin = board.D18
+        pixelPin = board.D10
         self.numPixels = 24
         self.ORDER = neopixel.GRB
         self.pixels = neopixel.NeoPixel(pixelPin, self.numPixels, brightness=0.2, auto_write=False, pixel_order=self.ORDER)
@@ -19,7 +19,7 @@ class Signals(Isignals):
         while True:
             time.sleep(1)
     
-    def PixelDriver(self, state: str):
+    def PixelDriver(self, state: str, progress = 0):
         self.pixels.fill((0, 0, 0))
         self.pixels.show()
         if state == "activate":
@@ -37,13 +37,9 @@ class Signals(Isignals):
                 self.rainbow_cycle(0.003)
         
         elif state == "startup":
-            while True:
-                self.pixels.fill((255, 0, 0))
+            for i in range(int(self.numPixels*progress/100)):
+                self.pixels[i] = (255,0,0)
                 self.pixels.show()
-                time.sleep(0.5)
-                self.pixels.fill((0, 0, 0))
-                self.pixels.show()
-                time.sleep(0.5)
                 
         elif state == "startupSuccess":
             self.pixels.fill((0, 255, 0))
@@ -76,10 +72,10 @@ class Signals(Isignals):
         self.p = Process(target=self.PixelDriver, args=("processing",))
         self.p.start()
         
-    def showStartup(self):
+    def showStartup(self,progress):
         self.p.terminate()
         self.p.join()
-        self.p = Process(target=self.PixelDriver, args=("startup",))
+        self.p = Process(target=self.PixelDriver, args=("startup",progress))
         self.p.start()
     
     def showStartupSuccess(self):

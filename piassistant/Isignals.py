@@ -33,9 +33,10 @@ class Isignals(ABC):
         """
         pass
     
-    def showStartup(self):
+    def showStartup(self,progress : int):
         """
         lights up a light or something else to show the user, the assistant is starting up
+        :progress: 0-100 progress of startup process
         :return: None
         """
         pass

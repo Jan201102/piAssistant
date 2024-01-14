@@ -16,11 +16,13 @@ class Main:
         with open(kwargs["configFile"], "r") as file:
             config = json.load(file)
 
+        self.signals = Signals()
         self.memory = Memory()
         self.audiCort = AuditoryCortex(*args, **config["assistant"])
+        self.signals.showStartup(10)
         self.speechCent = SpeechCenter()
-        self.signals = Signals()
-
+        self.signals.showStartup(30)
+        
         # load mastermodel
         backend = "tensorflow"
         for pkg in pkgutil.iter_modules():
@@ -36,7 +38,7 @@ class Main:
             mastermodel_class = importlib.import_module("piassistant.mastermodel.mastermodel_tflite",".")
 
         self.mastermodel = mastermodel_class.Mastermodel()
-
+        self.signals.showStartup(50)
 
         # load plugins
         self.import_plugins = config["plugins"].keys()
@@ -47,12 +49,15 @@ class Main:
             plugin = plugin_module.Plugin(self.memory, **config["plugins"][import_plugin])
             self.plugins.append(plugin)
         logging.info("plugins loaded.")
-
+        self.signals.showStartup(70)
+        
         # load apps
         logging.info("load apps...")
         self.apps = AppHandler(**config["apps"])
         logging.info("apps loaded.")
-
+        self.signals.showStartup(90)
+        
+        self.signals.showStartupSuccess()
         logging.info("Assistant ready")
 
     def process(self, text):
@@ -80,6 +85,7 @@ class Main:
                 self.signals.activate()
                 command = self.audiCort.listen(record=True, verbose=False)
                 logging.info("understood: " + command[0][0]["text"])
+                self.signals.showProcessing()
                 self.process(command[0][0]['text'])
                 self.memory.memorize_audio(command[1], command[0][0]['text'])
                 self.signals.deactivate()
