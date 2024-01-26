@@ -7,7 +7,7 @@
 - pocketsphinx or pvcorupine and pyrecorder
 - tensorflow or tensorflow lite
 ### Other requiered packages
-- neopixel: see Adafruits installation guide for neopixel in Python. To be able to run neopixel without root priviliges add 
+- neopixel: see Adafruits installation guide for neopixel in Python. To be able to run neopixel without root priviliges add:
 ```
 dtparam=spi=on
 enable_uart=1

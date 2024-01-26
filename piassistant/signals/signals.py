@@ -50,8 +50,6 @@ class Signals(Isignals):
         
         self.wait()
         
-    
-
     def activate(self):
         self.p.terminate()
         self.p.join()
@@ -119,7 +117,7 @@ class Signals(Isignals):
 if __name__ == "__main__":
     print("start")
     s = Signals()
-    s.showStartup()
+    s.showStartup(50)
     time.sleep(5)
     print("StartSucess")
     s.showStartupSuccess()

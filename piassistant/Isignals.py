@@ -47,3 +47,4 @@ class Isignals(ABC):
         :return: None
         """
         pass
+    
