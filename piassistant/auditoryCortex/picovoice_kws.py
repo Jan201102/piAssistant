@@ -52,6 +52,6 @@ class PicovoiceKWS():
         return True
     
 if __name__ == "__main__":
-    p = PicovoiceKWS(picovoice_access_key="f7zdcf7EHlS46UFCN39QUQQ3IUluSqwz0XlJv0h6UL6c4gBS7D0Aaw==")
+    p = PicovoiceKWS(picovoice_access_key="your key here")
     print("waiting for keyword...")
     p.wait()
