@@ -2,6 +2,7 @@ import logging
 
 from .vosk_text import *
 from .pocketsphinx_kws import *
+from .picovoice_kws import *
 from piassistant.IauditoryCortexGateway import *
 from .ear.ear import *
 
@@ -11,7 +12,11 @@ class AuditoryCortex(IauditoryCortexGateway):
         self.ear = Ear(**kwargs)
         if self.ear.mic_id != None:
             self.text = VoskText(self.ear, kwargs["voskModel"])
-            self.kws = PocketsphinxKWS(self.ear,**kwargs)
+            if kwargs["KWS_engine"] == "pocketsphinx":
+                self.kws = PocketsphinxKWS(self.ear,**kwargs)
+            elif kwargs["KWS_engine"] == "picovoice":  
+                self.kws = PicovoiceKWS(**kwargs)
+                
         logging.info("Auditory cortex ready")
 
     def listen(self,file=None,record=False,verbose=1):
