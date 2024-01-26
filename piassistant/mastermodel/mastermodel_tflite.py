@@ -55,7 +55,7 @@ class Mastermodel(Imastermodel):
 
             self.decoder.invoke()
 
-            char_index = np.argmax(decoder.get_tensor(self.decoderOutputDetails[3]['index'])[0, -1, :])
+            char_index = np.argmax(self.decoder.get_tensor(self.decoderOutputDetails[3]['index'])[0, -1, :])
             h = self.decoder.get_tensor(self.decoderOutputDetails[2]['index'])
             c = self.decoder.get_tensor(self.decoderOutputDetails[1]['index'])
 

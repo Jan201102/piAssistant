@@ -11,7 +11,7 @@ import pkgutil
 
 class Main:
     def __init__(self, *args, **kwargs):
-        logging.basicConfig(format="%(asctime)6s %(message)s", level=logging.DEBUG)
+        logging.basicConfig(format="%(asctime)6s %(message)s",handlers=[logging.FileHandler("piassistant.log"),logging.StreamHandler()], level=logging.DEBUG)
         logging.info("Starting Assistant...")
         with open(kwargs["configFile"], "r") as file:
             config = json.load(file)
@@ -62,15 +62,15 @@ class Main:
 
     def process(self, text):
         result = None
-        action = self.mastermodel.run_mastermodel(text)
-        logging.debug(action)
+        action = self.mastermodel.run_mastermodel(text).strip()
+        logging.debug(f"mastermodel produced command {action}")
         if action != "none":
             action = "self.apps." + action
             try:
                 result = eval(action)
-            except SyntaxError:
+            except (SyntaxError,AttributeError) as error:
                 result = None
-                logging.error("model produced invalid python command")
+                logging.error(f'model produced invalid python command: {action}')
         else:
             for plugin in self.plugins:
                 result = plugin.process(text)
