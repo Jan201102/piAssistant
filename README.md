@@ -4,7 +4,7 @@
 - vosk
 - pandas
 - pyaudio
-- pocketsphinx
+- pocketsphinx or pvcorupine and pyrecorder
 - tensorflow or tensorflow lite
 ### Other requiered packages
 - neopixel: see Adafruits installation guide for neopixel in Python. To be able to run neopixel without root priviliges add 
@@ -36,17 +36,28 @@ The piAssistant is configuered via the config.json file.
   "plugins": {"<plugin name>":{"configuration"} "every plugin
               that is listed in here will be used, all other will be ignored"
               },
-  "app": {"<app name": {"app specific configurations"}}
+  "apps": {"<app name": {"app specific configurations"}}
   }
 ```
 ### Configuration of the core functionalities
 ```json
 {"assistant":{"voskModel": ["the path to the vosk model"],   
-              "sensitivity": "value 0-100",
-              "pocketsphinxModel":"the path to the pocketsphinxmodel directory",
+              "KWS_engine":"<engine>" # insert "picovoice" or "pocketsphinx"
               "name": "word by wich the assistant will be activated",
+              "signals":"on/off", # set to "on" if you have neopixels atached, default is "off"
+              "micId":<int> # index number of the mic used for audio input
+              <other args>
               },
 }
+```
+If you want to use Pocketsphinx for key word search replace `<other args>` with:
+```json
+      "sensitivity": "value 0-100",
+      "pocketsphinxModel":"the path to the pocketsphinxmodel directory"
+```
+If you want to use picovoice  replace `<other args>` with:
+```json
+    "picovoice_acccessn_key":"your access key"
 ```
 ### Apps
 All apps are controlled with one single tensorflow model. The tensorflow model processes the user
@@ -62,7 +73,7 @@ and configuration are provided via config.json.
 "weatherSimple":{"apiKey":"apiKey for openweathermap.org",
                  "location":"name of the location you want to have weather information on"}
 ```
-timer
+- timer
 ```json
 "timer":{}
 ```
