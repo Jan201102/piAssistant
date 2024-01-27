@@ -16,7 +16,7 @@ class Main:
         with open(kwargs["configFile"], "r") as file:
             config = json.load(file)
 
-        self.signals = Signals()
+        self.signals = Signals(**config["assistant"])
         self.memory = Memory()
         self.audiCort = AuditoryCortex(*args, **config["assistant"])
         self.signals.showStartup(10)

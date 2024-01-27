@@ -5,8 +5,8 @@ import time
 
 
 class Signals(Isignals):
-    def __init__(self,status = "off",**config):
-        self.status = status 
+    def __init__(self,signals = "off",**config):
+        self.status = signals
         if self.status == "on":
             board = __import__("board")
             neopixel = __import__("neopixel")
@@ -54,6 +54,7 @@ class Signals(Isignals):
         
     def set_state(self, state: str, progress: int = 0):
         if self.status == "on":
+            logging.debug(f"setting signals to {state}")
             self.p.terminate()
             self.p.join()
             self.p = Process(target=self.PixelDriver, args=(state, progress,))
@@ -61,11 +62,9 @@ class Signals(Isignals):
         
     def activate(self):
         self.set_state("activate")
-        logging.debug("light up LED")
 
     def deactivate(self):
         self.set_state("deactivate")
-        logging.debug("turn off LED")
         
     def showProcessing(self):
         self.set_state("processing")
@@ -96,7 +95,7 @@ class Signals(Isignals):
             r = 0
             g = int(pos * 3)
             b = int(255 - pos * 3)
-        return (r, g, b) if self.ORDER in (neopixel.RGB, neopixel.GRB) else (r, g, b, 0)
+        return (r, g, b)
 
 
     def rainbow_cycle(self, wait):
