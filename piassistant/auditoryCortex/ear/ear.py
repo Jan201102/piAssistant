@@ -18,7 +18,7 @@ class Ear(IearGateway):
         self.file = None
         self.recorder = Recorder(self.sampRate, self.CHANNELS, self.p.get_sample_size(self.FORMAT))
 
-        if micId:
+        if micId is not None:
             self.mic_id = micId
         else:
             for i in range(self.p.get_device_count()):

@@ -1,19 +1,21 @@
 import logging
 from piassistant.Isignals import Isignals
-import board
-import neopixel
 from multiprocessing import Process
 import time
 
 
 class Signals(Isignals):
-    def __init__(self, **config):
-        pixelPin = board.D10
-        self.numPixels = 24
-        self.ORDER = neopixel.GRB
-        self.pixels = neopixel.NeoPixel(pixelPin, self.numPixels, brightness=0.2, auto_write=False, pixel_order=self.ORDER)
-        self.p = Process(target=self.wait)
-        self.p.start()
+    def __init__(self,status = "off",**config):
+        self.status = status 
+        if self.status == "on":
+            board = __import__("board")
+            neopixel = __import__("neopixel")
+            pixelPin = board.D10
+            self.numPixels = 24
+            self.ORDER = neopixel.GRB
+            self.pixels = neopixel.NeoPixel(pixelPin, self.numPixels, brightness=0.2, auto_write=False, pixel_order=self.ORDER)
+            self.p = Process(target=self.wait)
+            self.p.start()
         
     def wait(self):
         while True:
@@ -50,37 +52,29 @@ class Signals(Isignals):
         
         self.wait()
         
+    def set_state(self, state: str, progress: int = 0):
+        if self.status == "on":
+            self.p.terminate()
+            self.p.join()
+            self.p = Process(target=self.PixelDriver, args=(state, progress,))
+            self.p.start()
+        
     def activate(self):
-        self.p.terminate()
-        self.p.join()
-        self.p = Process(target=self.PixelDriver, args=("activate",))
-        self.p.start()
+        self.set_state("activate")
         logging.debug("light up LED")
 
     def deactivate(self):
-        self.p.terminate()
-        self.p.join()
-        self.p = Process(target=self.PixelDriver, args=("deactivate",))
-        self.p.start()
+        self.set_state("deactivate")
         logging.debug("turn off LED")
         
     def showProcessing(self):
-        self.p.terminate()
-        self.p.join()
-        self.p = Process(target=self.PixelDriver, args=("processing",))
-        self.p.start()
+        self.set_state("processing")
         
     def showStartup(self,progress):
-        self.p.terminate()
-        self.p.join()
-        self.p = Process(target=self.PixelDriver, args=("startup",progress))
-        self.p.start()
+        self.set_state("startup",progress)
     
     def showStartupSuccess(self):
-        self.p.terminate()
-        self.p.join()
-        self.p = Process(target=self.PixelDriver, args=("startupSuccess",))
-        self.p.start()
+        self.set_state("startupSuccess")
         
 
     def wheel(self, pos):
@@ -116,7 +110,7 @@ class Signals(Isignals):
 
 if __name__ == "__main__":
     print("start")
-    s = Signals()
+    s = Signals("on")
     s.showStartup(50)
     time.sleep(5)
     print("StartSucess")
