@@ -8,7 +8,7 @@ import time
 
 class Ear(IearGateway):
     FORMAT = pyaudio.paInt16
-    CHUNK = 4096
+    CHUNK = 512
     CHANNELS = 1
     p = pyaudio.PyAudio()
 

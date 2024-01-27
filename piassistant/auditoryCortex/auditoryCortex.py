@@ -15,7 +15,7 @@ class AuditoryCortex(IauditoryCortexGateway):
             if kwargs["KWS_engine"] == "pocketsphinx":
                 self.kws = PocketsphinxKWS(self.ear,**kwargs)
             elif kwargs["KWS_engine"] == "picovoice":  
-                self.kws = PicovoiceKWS(**kwargs)
+                self.kws = PicovoiceKWS(self.ear,**kwargs)
                 
         logging.info("Auditory cortex ready")
 

@@ -1,8 +1,8 @@
 import pvporcupine
-from pvrecorder import PvRecorder
+import struct
 
 class PicovoiceKWS():
-    def __init__(self, name="computer", picovoice_access_key = None,**kwargs):
+    def __init__(self, recorder, name="computer", picovoice_access_key = None,**kwargs):
         """
         Initializes an instance of the PicovoiceKWS class.
 
@@ -33,7 +33,7 @@ class PicovoiceKWS():
             print("Failed to initialize Porcupine")
             raise e
 
-        self.recorder = PvRecorder(frame_length=self.porcupine.frame_length)
+        self.recorder = recorder
          
     def wait(self):
         """
@@ -44,11 +44,12 @@ class PicovoiceKWS():
         """
         
         result = -1
-        self.recorder.start()
+        self.recorder.start_audio()
         while result < 0:
-            pcm = self.recorder.read()
+            pcm = self.recorder.get_audio()
+            pcm = struct.unpack_from("h" * self.porcupine.frame_length, pcm)
             result = self.porcupine.process(pcm)
-        self.recorder.stop()
+        self.recorder.stop_audio()
         return True
     
 if __name__ == "__main__":
