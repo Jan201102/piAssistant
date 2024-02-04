@@ -30,12 +30,23 @@ class Ear(IearGateway):
                     logging.debug("{} not supporting 16000khz".format(i))
             self.mic_id = int(input("please Input device index of preferred mic: "))
 
-        self.stream = self.p.open(format=self.FORMAT,
-                                  channels=self.CHANNELS,
-                                  input_device_index=self.mic_id,
-                                  rate=int(self.sampRate),
-                                  input=True,
-                                  frames_per_buffer=self.CHUNK)
+        numFails = 0
+        while numFails <10:
+            try:
+                self.stream = self.p.open(format=self.FORMAT,
+                                        channels=self.CHANNELS,
+                                        input_device_index=self.mic_id,
+                                        rate=int(self.sampRate),
+                                        input=True,
+                                        frames_per_buffer=self.CHUNK)
+                break
+            except OSError as e:
+                numFails += 1
+                if numFails >= 10:
+                    logging.error(e)
+                    raise(e)
+                logging.debug("Failed to open audiostream retrying...")
+                
         logging.info("Ear Ready")
     def __del__(self):
         self.stream.close()

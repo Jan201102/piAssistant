@@ -7,6 +7,7 @@ import importlib
 import logging
 import json
 import pkgutil
+import alsaaudio
 
 
 class Main:
@@ -21,6 +22,7 @@ class Main:
         self.audiCort = AuditoryCortex(*args, **config["assistant"])
         self.signals.showStartup(10)
         self.speechCent = SpeechCenter()
+        self.AudioOutput = alsaaudio.Mixer(control = "Headphone", cardindex = 0)
         self.signals.showStartup(30)
         
         # load mastermodel
@@ -81,12 +83,16 @@ class Main:
         while True:
             logging.info('listening...')
             if self.audiCort.wait():
+                volume = self.AudioOutput.getvolume()[0]
+                self.AudioOutput.setvolume(0)
                 logging.info("Key word detected")
                 self.signals.activate()
                 command = self.audiCort.listen(record=True, verbose=False)
                 logging.info("understood: " + command[0][0]["text"])
                 self.signals.showProcessing()
                 self.process(command[0][0]['text'])
+                self.AudioOutput.setvolume(volume)
                 self.memory.memorize_audio(command[1], command[0][0]['text'])
                 self.signals.deactivate()
+                
 
