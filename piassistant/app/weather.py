@@ -24,6 +24,7 @@ class App:
         else:
             data = cache[range][when]
 
+        print(data)
         if "rain" in data.keys():
             rain = str(data["rain"]).replace(".",",")
         else:
@@ -38,7 +39,7 @@ class App:
                 answer = "es wird zwischen {min} und {max} grad warm".format(min=min, max=max)
             else:
                 temp = str(data["temp"]).replace(".",",")
-                answer = "es wird {temp} grad warm".format(temp)
+                answer = f"es wird {temp} grad warm"
         elif type == "rain":
             if rain == 0:
                 answer = " es wird keinen Niederschlag geben"

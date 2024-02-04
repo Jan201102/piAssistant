@@ -70,7 +70,7 @@ and configuration are provided via config.json.
 ```
 - weatherSimple
 ```json
-"weatherSimple":{"apiKey":"apiKey for openweathermap.org",
+"weather":{"apiKey":"apiKey for openweathermap.org",
                  "location":"name of the location you want to have weather information on"}
 ```
 - timer
