@@ -22,7 +22,7 @@ class Main:
         self.audiCort = AuditoryCortex(*args, **config["assistant"])
         self.signals.showStartup(10)
         self.speechCent = SpeechCenter()
-        self.AudioOutput = alsaaudio.Mixer(control = "Headphone", cardindex = 0)
+        self.AudioOutput = self.setup_audio_output()
         self.signals.showStartup(30)
         
         # load mastermodel
@@ -76,8 +76,10 @@ class Main:
         else:
             for plugin in self.plugins:
                 result = plugin.process(text)
+        
         if result is not None:
             self.speechCent.say(result)
+        logging.debug("processed user input")
 
     def start(self):
         while True:
@@ -90,9 +92,23 @@ class Main:
                 command = self.audiCort.listen(record=True, verbose=False)
                 logging.info("understood: " + command[0][0]["text"])
                 self.signals.showProcessing()
-                self.process(command[0][0]['text'])
                 self.AudioOutput.setvolume(volume)
+                self.process(command[0][0]['text'])
                 self.memory.memorize_audio(command[1], command[0][0]['text'])
                 self.signals.deactivate()
+                 
+    @staticmethod            
+    def setup_audio_output() -> alsaaudio.Mixer :
+        available_cards = alsaaudio.cards()
+        mixer = alsaaudio.Mixer()
+        for card in available_cards:
+            if card == "seeed2micvoicec":
+                mixer = alsaaudio.Mixer("Playback",cardindex = available_cards.index(card))
+            elif card == "Headphones":
+                mixer = alsaaudio.Mixer("PCM",cardindex = available_cards.index(card))
+                
+        return mixer
+                
+    
                 
 
