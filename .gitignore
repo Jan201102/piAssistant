@@ -1,5 +1,7 @@
 # Default ignored files
 /shelf/
+.env
+*.log
 /workspace.xml
 # Editor-based HTTP Client requests
 /httpRequests/
@@ -10,3 +12,5 @@
 *.pyc
 ##ignore all lokal piassistant data
 /piassistant/memory/wavFiles
+/Sandpit
+config.json
