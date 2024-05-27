@@ -1,4 +1,5 @@
 from unittest import TestCase
+import context
 from piassistant.app import timer
 from time import sleep
 

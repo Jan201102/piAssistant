@@ -1,4 +1,5 @@
 import unittest
+import context
 from piassistant.app.appHandler import AppHandler
 
 
