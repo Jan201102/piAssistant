@@ -1,5 +1,5 @@
 from piassistant.IspeechCenterGateway import IspeechCenterGateway
-from piassistant.speechCenter.tts import *
+from piassistant.speechCenter.tts import TTS
 
 
 class SpeechCenter(IspeechCenterGateway):

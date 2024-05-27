@@ -1,5 +1,5 @@
 from piassistant.auditoryCortex.auditoryCortex import *
-from piassistant.speechCenter.speechCenter import *
+from piassistant.speechCenter.speechCenter import SpeechCenter
 from piassistant.memory.memory import Memory
 from piassistant.signals.signals import Signals
 from piassistant.app.appHandler import AppHandler
