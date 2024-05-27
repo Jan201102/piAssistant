@@ -1,4 +1,5 @@
 import requests
+import logging
 
 class App:
     def __init__(self, **kwargs):
@@ -18,13 +19,13 @@ class App:
             lat=self.lat, lon=self.lon, id=self.apiKey)
         cache = requests.get(call)
         cache = cache.json()
+        logging.debug("retrieved weather information from Server")
 
         if range == "current":
             data = cache[range]
         else:
             data = cache[range][when]
 
-        print(data)
         if "rain" in data.keys():
             rain = str(data["rain"]).replace(".",",")
         else:

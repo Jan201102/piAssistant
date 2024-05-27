@@ -1,4 +1,5 @@
 import pyttsx3
+import logging
 
 class TTS():
     def __init__(self):
@@ -7,5 +8,7 @@ class TTS():
         self.engine.setProperty('rate', 150)
 
     def say(self, text):
+        logging.debug(f"saying:{text}")
         self.engine.say(text)
         self.engine.runAndWait()
+        logging.debug("Done")

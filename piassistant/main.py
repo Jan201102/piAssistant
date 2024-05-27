@@ -77,9 +77,11 @@ class Main:
             for plugin in self.plugins:
                 result = plugin.process(text)
         
-        if result is not None:
-            self.speechCent.say(result)
         logging.debug("processed user input")
+        if result is not None:
+            logging.debug("calling speechCenter")
+            self.speechCent.say(result)
+        
 
     def start(self):
         while True:
