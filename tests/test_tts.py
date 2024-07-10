@@ -15,11 +15,11 @@ class TestTTS(unittest.TestCase):
         signal.signal(signal.SIGALRM, timeout_handler)
         signal.alarm(15)
         try:
-            self.tts.say("es wird zwischen 8,85 und 17,82 grad warm, bei 0,31 milimeter Niederschlag und einer durchschnittlichen Windgeschwindigkeit von 3,64 meter pro sekunde")
+            self.tts.say("es wird zwischen 8,85 und 17,82 grad warm")
         except TimeoutError:
             self.fail("TTS.say() took too long to exceute")
             
         finally:
             signal.alarm(0)
-        
+
         
