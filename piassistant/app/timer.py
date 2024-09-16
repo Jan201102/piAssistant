@@ -16,9 +16,10 @@ class App:
     def set(self, duration):
         duration = duration.replace(" ","")
         duration = time.strptime(duration, "%H:%M:%S")
-        duration = duration.tm_hour*3600 + duration.tm_min*60 + duration.tm_sec
-        timer = threading.Thread(target=self.alarm, args=(duration,))
+        duration_sec = duration.tm_hour*3600 + duration.tm_min*60 + duration.tm_sec
+        timer = threading.Thread(target=self.alarm, args=(duration_sec,))
         timer.start()
+        return f"ich stelle einen timer auf {duration.tm_hour} stunden {duration.tm_min} minuten und {duration.tm_sec} sekunden"
 
     def alarm(self, duration: int):
         time.sleep(duration)
