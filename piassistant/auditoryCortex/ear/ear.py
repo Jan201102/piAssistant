@@ -12,30 +12,20 @@ class Ear(IearGateway):
     CHANNELS = 1
     p = pyaudio.PyAudio()
 
-    def __init__(self, micId = None,  **kwargs):
+    def __init__(self, **kwargs):
         logging.info("starting Ear...")
         self.sampRate = 16000
         self.file = None
         self.recorder = Recorder(self.sampRate, self.CHANNELS, self.p.get_sample_size(self.FORMAT))
-
-        if micId is not None:
-            self.mic_id = micId
-        else:
-            for i in range(self.p.get_device_count()):
-                try:
-                    if self.p.is_format_supported(self.sampRate, input_device=i, input_format=self.FORMAT,
-                                                  input_channels=self.CHANNELS):
-                        print(self.p.get_device_info_by_index(i))
-                except ValueError:
-                    logging.debug("{} not supporting 16000khz".format(i))
-            self.mic_id = int(input("please Input device index of preferred mic: "))
-
+        return
+        
+    def open_audio_stream(self):
+        logging.debug("Opening audio stream")
         numFails = 0
         while numFails <10:
             try:
                 self.stream = self.p.open(format=self.FORMAT,
                                         channels=self.CHANNELS,
-                                        input_device_index=self.mic_id,
                                         rate=int(self.sampRate),
                                         input=True,
                                         frames_per_buffer=self.CHUNK)
@@ -45,21 +35,22 @@ class Ear(IearGateway):
                 if numFails >= 10:
                     logging.error(e)
                     raise(e)
-                logging.debug("Failed to open audiostream retrying...")
+            logging.debug("Failed to open audiostream retrying...")
                 
-        logging.info("Ear Ready")
+        logging.debug("Audio stream opened")
+        
+        
     def __del__(self):
         self.stream.close()
 
     def start_audio(self, file=None, record=False, timeout=0, threading=True, verbose=0):
+        self.open_audio_stream()
         self.file = file
         self.recorder.new_record()
         if file is None:
             self.threading = threading
             self.record = record
-            start = time.perf_counter()
             self.stream.start_stream()
-            logging.debug('{} second[s] for opening audio stream'.format(time.perf_counter() - start))
             if threading:
                 self.thread = AudioThread(self.stream, self.CHUNK, timeout, self.sampRate)
         else:
@@ -79,10 +70,8 @@ class Ear(IearGateway):
 
     def stop_audio(self, verbose=0):
         if self.file is None:
-
             if self.threading:
                 self.thread.stop(verbose)
             self.stream.stop_stream()
-
-
+        self.stream.close()
         return self.recorder.save_recording()

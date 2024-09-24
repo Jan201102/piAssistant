@@ -45,7 +45,6 @@ The piAssistant is configuered via the config.json file.
               "KWS_engine":"<engine>" # insert "picovoice" or "pocketsphinx"
               "name": "word by wich the assistant will be activated",
               "signals":"on/off", # set to "on" if you have neopixels atached, default is "off"
-              "micId":<int> # index number of the mic used for audio input
               <other args>
               },
 }
