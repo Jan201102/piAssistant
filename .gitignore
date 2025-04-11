@@ -2,6 +2,7 @@
 /shelf/
 .env
 *.log
+.idea/
 /workspace.xml
 # Editor-based HTTP Client requests
 /httpRequests/
