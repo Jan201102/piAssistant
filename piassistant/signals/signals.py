@@ -2,12 +2,13 @@ import logging
 from piassistant.Isignals import Isignals
 from multiprocessing import Process
 import time
+import platform
 
 
 class Signals(Isignals):
-    def __init__(self,signals = "off",**config):
-        self.status = signals
-        if self.status == "on":
+    def __init__(self,**config):
+        self.platform = platform.system()
+        if self.platform == "Linux":
             board = __import__("board")
             neopixel = __import__("neopixel")
             pixelPin = board.D10
@@ -53,7 +54,7 @@ class Signals(Isignals):
         self.wait()
         
     def set_state(self, state: str, progress: int = 0):
-        if self.status == "on":
+        if self.platform == "Linux":
             logging.debug(f"setting signals to {state}")
             self.p.terminate()
             self.p.join()

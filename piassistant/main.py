@@ -7,7 +7,7 @@ import importlib
 import logging
 import json
 import pkgutil
-import alsaaudio
+import platform
 
 
 class Main:
@@ -22,7 +22,7 @@ class Main:
         self.audiCort = AuditoryCortex(*args, **config["assistant"])
         self.signals.showStartup(10)
         self.speechCent = SpeechCenter()
-        self.AudioOutput = self.setup_audio_output()
+        self.AudioOutput = SpeakerHandler()
         self.signals.showStartup(30)
         
         # load mastermodel
@@ -87,20 +87,20 @@ class Main:
         while True:
             logging.info('listening...')
             if self.audiCort.wait():
-                volume = self.AudioOutput.getvolume()[0]
-                self.AudioOutput.setvolume(0)
+                self.AudioOutput.mute_speakers()
                 logging.info("Key word detected")
                 self.signals.activate()
                 command = self.audiCort.listen(record=True, verbose=False)
                 logging.info("understood: " + command[0][0]["text"])
                 self.signals.showProcessing()
-                self.AudioOutput.setvolume(volume)
+                self.AudioOutput.unmute_speakers()
                 self.process(command[0][0]['text'])
                 self.memory.memorize_audio(command[1], command[0][0]['text'])
                 self.signals.deactivate()
                  
     @staticmethod            
-    def setup_audio_output() -> alsaaudio.Mixer :
+    def setup_audio_output() :
+        import alsaaudio
         available_cards = alsaaudio.cards()
         mixer = alsaaudio.Mixer()
         for card in available_cards:
@@ -110,6 +110,50 @@ class Main:
                 mixer = alsaaudio.Mixer("PCM",cardindex = available_cards.index(card))
                 
         return mixer
+    
+class SpeakerHandler():
+    def __init__(self, *args, **kwargs):
+        self.platform = platform.system()
+        if self.platform == "Linux":
+            self.mixer = self.init_linux()
+        elif self.platform == "Windows":
+            self.mixer = self.init_windows()
+        self.volume = 50
+
+    def init_linux(self):
+        import alsaaudio
+        available_cards = alsaaudio.cards()
+        mixer = alsaaudio.Mixer()
+        for card in available_cards:
+            if card == "seeed2micvoicec":
+                mixer = alsaaudio.Mixer("Playback",cardindex = available_cards.index(card))
+            elif card == "Headphones":
+                mixer = alsaaudio.Mixer("PCM",cardindex = available_cards.index(card))
+        return mixer
+    
+    def init_windows(self):
+        from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+        from comtypes import CLSCTX_ALL
+
+        devices = AudioUtilities.GetSpeakers()
+        interface = devices.Activate(
+            IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+        volume = interface.QueryInterface(IAudioEndpointVolume)
+        return volume
+    
+    def mute_speakers(self):
+        if self.platform == "Linux":
+            self.volume = self.mixer.getvolume()[0]
+            self.mixer.setvolume(0)
+        elif self.platform == "Windows":
+            self.mixer.SetMute(1, None)
+
+    def unmute_speakers(self):
+        if self.platform == "Linux":
+            self.mixer.setvolume(self.volume)
+        elif self.platform == "Windows":
+            self.mixer.SetMute(0,None)
+    
                 
     
                 
