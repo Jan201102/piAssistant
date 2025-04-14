@@ -26,6 +26,8 @@ class App:
                     self.api.save_api_key()
                     print("Done")
                     break
+                except KeyboardInterrupt:
+                    raise(KeyboardInterrupt)
                 except:
                     sleep(1)
 
