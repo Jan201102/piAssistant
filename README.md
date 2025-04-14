@@ -1,11 +1,7 @@
 # piAsisstant
 ## Installation and Usage
 ### Requiered Python packages
-- vosk
-- pandas
-- pyaudio
-- pocketsphinx or pvporcupine
-- tensorflow or tensorflow lite
+For windows use the [requirements_windows.txt](requirements_windows.txt) with pip install.
 ### Other requiered packages
 - neopixel: see Adafruits installation guide for neopixel in Python. To be able to run neopixel without root priviliges add:
 ```
@@ -16,6 +12,7 @@ to `/boot/config.txt` and connect neopixel to `GPIO10`.
 ### Requiered models
 - vosk model of your choice: https://alphacephei.com/vosk/models
 - pocketsphinx model of your choice: https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/
+- openwakeword models: https://github.com/fwartner/home-assistant-wakewords-collection/tree/main
 ### Optional Python packages
 - general
   - mosquitto
@@ -42,7 +39,7 @@ The piAssistant is configuered via the config.json file.
 ### Configuration of the core functionalities
 ```json
 {"assistant":{"voskModel": ["the path to the vosk model"],   
-              "KWS_engine":"<engine>" # insert "picovoice" or "pocketsphinx"
+              "KWS_engine":"<engine>" # insert "picovoice" or "pocketsphinx" or "openwakeword"
               "name": "word by wich the assistant will be activated",
               "signals":"on/off", # set to "on" if you have neopixels atached, default is "off"
               <other args>
@@ -56,8 +53,12 @@ If you want to use Pocketsphinx for key word search replace `<other args>` with:
 ```
 If you want to use picovoice  replace `<other args>` with:
 ```json
-    "picovoice_acccessn_key":"your access key"
+    "picovoice_acccessn_key":"your access key" replace `<other args>` with:
 ```
+If you want to use the openwakeword implementation replace `<other args>` with:
+
+```json
+  "openwakewordmodels":["list_of_paths_to_modelfiles"]
 ### Apps
 All apps are controlled with one single tensorflow model. The tensorflow model processes the user
 input and then calls the corresponding apps. All necessary information

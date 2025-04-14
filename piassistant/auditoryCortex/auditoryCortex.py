@@ -5,6 +5,7 @@ from .pocketsphinx_kws import *
 from .picovoice_kws import *
 from piassistant.IauditoryCortexGateway import *
 from .ear.ear import *
+from .openwakeword import OpenWakeWordDetector
 
 class AuditoryCortex(IauditoryCortexGateway):
     def __init__(self,*args,**kwargs):
@@ -16,6 +17,8 @@ class AuditoryCortex(IauditoryCortexGateway):
             self.kws = PocketsphinxKWS(self.ear,**kwargs)
         elif kwargs["KWS_engine"] == "picovoice":  
             self.kws = PicovoiceKWS(self.ear,**kwargs)
+        elif kwargs["KWS_engine"] == "openwakeword":
+            self.kws = OpenWakeWordDetector(self.ear,**kwargs)
                 
         logging.info("Auditory cortex ready")
 
