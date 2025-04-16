@@ -19,7 +19,9 @@ to `/boot/config.txt` and connect neopixel to `GPIO10`.
 - hue
   - hue-py
 - weatherSimple
-  - none
+  - openmeteo_requests
+  - requests-cache
+  - retry-requests
 - timer
   - pyame
   
@@ -59,6 +61,8 @@ If you want to use the openwakeword implementation replace `<other args>` with:
 
 ```json
   "openwakewordmodels":["list_of_paths_to_modelfiles"]
+```
+
 ### Apps
 All apps are controlled with one single tensorflow model. The tensorflow model processes the user
 input and then calls the corresponding apps. All necessary information
@@ -70,8 +74,7 @@ and configuration are provided via config.json.
 ```
 - weatherSimple
 ```json
-"weather":{"apiKey":"apiKey for openweathermap.org",
-                 "location":"name of the location you want to have weather information on"}
+"weather":{"location":"name of the location you want to have weather information on"}
 ```
 - timer
 ```json
