@@ -3,6 +3,7 @@
 .env
 *.log
 .idea/
+.vscode/
 /workspace.xml
 # Editor-based HTTP Client requests
 /httpRequests/
