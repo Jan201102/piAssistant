@@ -1,10 +1,12 @@
+import logging
+logging.basicConfig(format="%(asctime)6s %(message)s",handlers=[logging.FileHandler("piassistant.log"),logging.StreamHandler()], level=logging.DEBUG)
 from piassistant.auditoryCortex.auditoryCortex import *
 from piassistant.speechCenter.speechCenter import SpeechCenter
 from piassistant.memory.memory import Memory
 from piassistant.signals.signals import Signals
 from piassistant.app.appHandler import AppHandler
 import importlib
-import logging
+
 import json
 import pkgutil
 import platform
@@ -12,6 +14,7 @@ import platform
 
 class Main:
     def __init__(self, *args, **kwargs):
+        print("starting assistant...")
         logging.basicConfig(format="%(asctime)6s %(message)s",handlers=[logging.FileHandler("piassistant.log"),logging.StreamHandler()], level=logging.DEBUG)
         logging.info("Starting Assistant...")
         with open(kwargs["configFile"], "r") as file:
