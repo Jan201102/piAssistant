@@ -1,0 +1,13 @@
+[Unit]
+Description=piAssistant Service
+After=network.target
+
+[Service]
+ExecStart=$python executable§
+WorkingDirectory=$WorkingDirectory$
+Restart=always
+User=$User$
+Environment="PYTHONUNBUFFERED=1"
+
+[Install]
+WantedBy=multi-user.target

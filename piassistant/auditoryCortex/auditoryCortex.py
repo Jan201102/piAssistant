@@ -1,10 +1,9 @@
 import logging
 
 from .vosk_text import *
-from .pocketsphinx_kws import *
-from .picovoice_kws import *
 from piassistant.IauditoryCortexGateway import *
 from .ear.ear import *
+
 
 class AuditoryCortex(IauditoryCortexGateway):
     def __init__(self,*args,**kwargs):
@@ -13,9 +12,14 @@ class AuditoryCortex(IauditoryCortexGateway):
         self.ear = Ear(**kwargs)
         self.text = VoskText(self.ear, kwargs["voskModel"])
         if kwargs["KWS_engine"] == "pocketsphinx":
+            from .pocketsphinx_kws import PocketsphinxKWS
             self.kws = PocketsphinxKWS(self.ear,**kwargs)
         elif kwargs["KWS_engine"] == "picovoice":  
+            from .picovoice_kws import PicovoiceKWS
             self.kws = PicovoiceKWS(self.ear,**kwargs)
+        elif kwargs["KWS_engine"] == "openwakeword":
+            from .openwakeword import OpenWakeWordDetector
+            self.kws = OpenWakeWordDetector(self.ear,**kwargs)
                 
         logging.info("Auditory cortex ready")
 

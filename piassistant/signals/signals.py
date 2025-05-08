@@ -2,20 +2,43 @@ import logging
 from piassistant.Isignals import Isignals
 from multiprocessing import Process
 import time
+import platform
+import importlib.util
 
 
 class Signals(Isignals):
-    def __init__(self,signals = "off",**config):
-        self.status = signals
-        if self.status == "on":
+    def __init__(self,**config):
+        self.platform = platform.system()
+        if self.platform == "Linux":
             board = __import__("board")
-            neopixel = __import__("neopixel")
             pixelPin = board.D10
             self.numPixels = 24
-            self.ORDER = neopixel.GRB
-            self.pixels = neopixel.NeoPixel(pixelPin, self.numPixels, brightness=0.2, auto_write=False, pixel_order=self.ORDER)
+            self.pixel = None
+
+            #check wich neopixel module is available
+            if importlib.util.find_spec("neopixel") is not None:
+                neopixel = importlib.import_module("neopixel")
+                self.ORDER = neopixel.GRB
+                self.pixels = neopixel.NeoPixel(pixelPin, self.numPixels, brightness=0.2, auto_write=False, pixel_order=self.ORDER)
+            elif importlib.util.find_spec("neopixel_spi") is not None:
+                neopixel = importlib.import_module("neopixel_spi")
+                self.ORDER = neopixel.GRB
+                self.pixels = neopixel.NeoPixel_SPI(board.SPI(),self.numPixels, brightness=0.2, auto_write=False, pixel_order=self.ORDER)
+            else:
+                raise ImportError("No neopixel or neopixel_spi module found")
+    
             self.p = Process(target=self.wait)
             self.p.start()
+
+    def __del__(self):
+        if self.platform == "Linux":
+            self.p.terminate()
+            self.p.join()
+            self.pixels.fill((0, 0, 0))
+            self.pixels.show()
+            logging.debug("Signals terminated")
+        else:
+            logging.debug("Signals not terminated, not running on Linux")
         
     def wait(self):
         while True:
@@ -53,7 +76,7 @@ class Signals(Isignals):
         self.wait()
         
     def set_state(self, state: str, progress: int = 0):
-        if self.status == "on":
+        if self.platform == "Linux":
             logging.debug(f"setting signals to {state}")
             self.p.terminate()
             self.p.join()
@@ -106,22 +129,3 @@ class Signals(Isignals):
             self.pixels.show()
             time.sleep(wait)
         
-
-if __name__ == "__main__":
-    print("start")
-    s = Signals("on")
-    s.showStartup(50)
-    time.sleep(5)
-    print("StartSucess")
-    s.showStartupSuccess()
-    time.sleep(5)
-    print("activate")
-    s.activate()
-    time.sleep(5)
-    print("processing")
-    s.showProcessing()
-    time.sleep(5)
-    print("off")
-    s.deactivate()
-    time.sleep(1)
-    s.p.terminate()

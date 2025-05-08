@@ -1,63 +1,109 @@
-import requests
-import logging
+from geopy.geocoders import Nominatim
+import requests_cache
+from retry_requests import retry
+import openmeteo_requests
+
 
 class App:
     def __init__(self, **kwargs):
-        self.apiKey = kwargs["apiKey"]
         self.dest = kwargs["location"]
-        call = "http://api.openweathermap.org/data/2.5/weather?q={loc}&lang=de&appid={id}".format(loc=self.dest,
-                                                                                                  id=self.apiKey)
-        cache = requests.get(call)
-        cache = cache.json()
-        self.lon = cache["coord"]["lon"]
-        self.lat = cache["coord"]["lat"]
+        self.url = "https://api.open-meteo.com/v1/forecast"
+
+        # Setup the Open-Meteo API client with cache and retry on error
+        cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
+        retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
+        self.openmeteo = openmeteo_requests.Client(session = retry_session)
+
+        geolocator = Nominatim(user_agent="weather")
+        location = geolocator.geocode(self.dest)
+
+        self.params = {
+            "latitude": location.latitude,
+            "longitude": location.longitude,
+            "daily": ["weather_code", "temperature_2m_max", "temperature_2m_min", "precipitation_sum", "temperature_2m_mean", "wind_speed_10m_mean"],
+            "current": ["temperature_2m", "precipitation", "wind_speed_10m", "weather_code"]
+        }
 
     def request(self, range, when = 0, type = ""):
         range = range.strip()
-        type = type.strip()
-        call = "https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&lang=de&appid={id}&units=metric".format(
-            lat=self.lat, lon=self.lon, id=self.apiKey)
-        cache = requests.get(call)
-        cache = cache.json()
-        logging.debug("retrieved weather information from Server")
-
+        #required fields temp min max,current,rain,wind_speed
+        response = self.openmeteo.weather_api(self.url, params=self.params)[0]
         if range == "current":
-            data = cache[range]
+            current =  response.Current()
+            weather_description = self.wmo_code_to_german_description(current.Variables(3).Value())
+            temp = current.Variables(0).Value()
+            rain = current.Variables(1).Value()
+            wind_speed = current.Variables(2).Value()
+            if type == "temp":
+                answer = "es ist {temp} grad".format(temp=temp)
+            elif type == "rain":
+                if rain == 0:
+                    answer = "es wird keinen Niederschlag geben"
+                else:
+                    answer = "es wird {rain} milimeter Niederschlag geben".format(rain=rain)
+            elif type == "wind":
+                answer = "die Windgeschwindigkeit beträgt {wind} meter pro sekunde".format(wind=wind_speed)
         else:
-            data = cache[range][when]
-
-        if "rain" in data.keys():
-            rain = str(data["rain"]).replace(".",",")
-        else:
-            rain = 0
-        wind_speed = str(data["wind_speed"]).replace(".", ",")
-
-        #create an answer that can be spoken
-        if type == "temp":
-            if range == "daily":
-                min = str(data["temp"]["min"]).replace(".", ",")
-                max = str(data["temp"]["max"]).replace(".", ",")
-                answer = "es wird zwischen {min} und {max} grad warm".format(min=min, max=max)
+            forecast = response.Daily()
+            weather_description = self.wmo_code_to_german_description(forecast.Variables(0).Values(when))
+            temp_max = round(forecast.Variables(1).Values(when))
+            temp_min = round(forecast.Variables(2).Values(when))
+            rain = round(forecast.Variables(3).Values(when))
+            temp_mean = round(forecast.Variables(4).Values(when))
+            wind_speed = round(forecast.Variables(5).Values(when))
+            if type == "temp":
+                answer = "es wird zwischen {temp_min} und {temp_max} grad warm".format(temp_min=temp_min, temp_max=temp_max)
+            elif type == "rain":
+                if rain == 0:
+                    answer = "es wird keinen Niederschlag geben"
+                else:
+                    answer = "es wird {rain} milimeter Niederschlag geben".format(rain=rain)
+            elif type == "wind":
+                answer = "die durchschnittliche Windgeschwindigkeit beträgt {wind} meter pro sekunde".format(wind=wind_speed)
             else:
-                temp = str(data["temp"]).replace(".",",")
-                answer = f"es wird {temp} grad warm"
-        elif type == "rain":
-            if rain == 0:
-                answer = " es wird keinen Niederschlag geben"
-            else:
-                answer = "es wird {rain} milimeter Niederschlag geben".format(rain=rain)
-        elif type == "wind":
-            answer = "die durchschnittliche Windgeschwindigkeit beträgt {wind} meter pro sekunde".format(wind=wind_speed)
-        else:
-            if range == "daily":
-                min = str(data["temp"]["min"]).replace(".", ",")
-                max = str(data["temp"]["max"]).replace(".", ",")
-                answer = "es wird zwischen {min} und {max} grad warm, bei {rain} milimeter Niederschlag" \
-                     " und einer durchschnittlichen Windgeschwindigkeit von {wind} meter pro sekunde".format(min=min, max=max, rain=rain, wind=wind_speed)
-            else:
-                temp = str(data["temp"]).replace(".", ",")
-                answer = "es wird zwischen {temp} grad warm, bei {rain} milimeter Niederschlag" \
+                answer = "es wird {desc} bei einer Temperatur zwischen {temp_min} und {temp_max} grad, {rain} milimeter Niederschlag" \
                          " und einer durchschnittlichen Windgeschwindigkeit von {wind} meter pro sekunde".format(
-                    temp=temp, rain=rain, wind=wind_speed)
+                    temp_min=temp_min, temp_max=temp_max, rain=rain, wind=wind_speed,desc=weather_description)
 
         return answer
+    
+    def wmo_code_to_german_description(self,code):
+        """
+        Converts a WMO weather code to its German description.
+        Args:
+            code (int): The WMO weather code.
+        Returns:
+            str: The German description of the weather condition.
+        """
+        wmo_descriptions = {
+            0: "Klarer Himmel",
+            1: "Meist klar",
+            2: "Teilweise bewölkt",
+            3: "Bewölkt",
+            45: "Nebel",
+            48: "Gefrierender Nebel",
+            51: "Leichter Nieselregen",
+            53: "Mäßiger Nieselregen",
+            55: "Starker Nieselregen",
+            56: "Leichter gefrierender Nieselregen",
+            57: "Starker gefrierender Nieselregen",
+            61: "Leichter Regen",
+            63: "Mäßiger Regen",
+            65: "Starker Regen",
+            66: "Leichter gefrierender Regen",
+            67: "Starker gefrierender Regen",
+            71: "Leichter Schneefall",
+            73: "Mäßiger Schneefall",
+            75: "Starker Schneefall",
+            77: "Schneekörner",
+            80: "Leichte Regenschauer",
+            81: "Mäßige Regenschauer",
+            82: "Starke Regenschauer",
+            85: "Leichte Schneeschauer",
+            86: "Starke Schneeschauer",
+            95: "Gewitter",
+            96: "Gewitter mit leichtem Hagel",
+            99: "Gewitter mit starkem Hagel"
+        }
+
+        return wmo_descriptions.get(code, "Unbekannte Wetterbedingung")

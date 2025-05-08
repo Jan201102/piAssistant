@@ -21,17 +21,8 @@ class PocketsphinxKWS:
     def kws_decoder(self, kwargs):
         path = kwargs['pocketsphinxModel']
         name = kwargs['name']
-        hmm = None
-        dictionary = None
-        for entry in os.scandir(path):
-            if entry.is_dir():
-                if 'feat.params' and 'mdef' and 'noisedict' in os.listdir(path + "/" + entry.name):
-                    hmm = os.path.join(path, entry.name)
-                if ".dic" in entry.name:
-                    dictionary = os.path.join(path, entry.name)
-            else:
-                if ".dic" in entry.name:
-                    dictionary = os.path.join(path, entry.name)
+        hmm = self.scan_dir_for_hmm_files(path)
+        dictionary = self.scan_dir_for_dic_files(path)
 
         if hmm is None:
             raise ValueError('hmm not found for pocketsphinx')
@@ -39,6 +30,37 @@ class PocketsphinxKWS:
             raise ValueError('dictionary for pocketsphinx not found')
 
         self.__kws_decoder = Decoder(hmm = hmm, dict = dictionary, keyphrase = name, kws_threshold = self.sensitivity)
+
+    def scan_dir_for_hmm_files(self, path):
+        required_files = {'feat.params', 'mdef', 'noisedict'}
+        # Check if all required files exist in the current directory
+        if required_files.issubset(set(os.listdir(path))):
+            return path
+        # Recursively check subdirectories
+        elif self.has_subdirectories(path):
+            for entry in os.scandir(path):
+                if entry.is_dir():
+                    hmm = self.scan_dir_for_hmm_files(entry.path)
+                    if hmm is not None:
+                        return hmm
+        return None
+        
+    def scan_dir_for_dic_files(self, path):
+        for entry in os.scandir(path):
+            if entry.is_file() and entry.name.endswith(".dic"):
+                return os.path.join(path, entry.name)
+            elif entry.is_dir():
+                result = self.scan_dir_for_dic_files(entry.path)
+                if result:
+                    return result
+        return None
+
+    @staticmethod        
+    def has_subdirectories(folder_path):
+        for entry in os.scandir(folder_path):
+            if entry.is_dir():
+                return True
+        return False
 
     def wait(self):
         self.ear.start_audio(threading=False)
