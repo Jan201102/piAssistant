@@ -1,11 +1,13 @@
 import logging
 from openwakeword.model import Model
+import openwakeword.utils
 import numpy as np
 
 
 class OpenWakeWordDetector:
     def __init__(self, ear,openwakewordmodels, **kwargs):
         logging.info("initializing openwakeword detector")
+        openwakeword.utils.download_models()
         self.ear = ear
         self.model = Model(wakeword_models=openwakewordmodels)
         logging.info("Done")

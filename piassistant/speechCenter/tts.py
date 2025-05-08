@@ -2,7 +2,7 @@ from RealtimeTTS import TextToAudioStream, SystemEngine
 import logging
 
 class TTS():
-    def __init__(self,voice:str = "Hedda",speed:int = 150):
+    def __init__(self,voice:str = "German",speed:int = 150):
         """
         Initializes the TTS engine with the specified voice and speed.
         Args:
@@ -12,7 +12,7 @@ class TTS():
         logging.info("Initializing TTS engine")
         self.engine = SystemEngine(voice)
         self.engine.set_voice_parameters(rate = speed)
-        self.stream = TextToAudioStream(self.engine)
+        self.stream = TextToAudioStream(self.engine,frames_per_buffer=256)
         logging.info("Done")
 
     def say(self,text:str):

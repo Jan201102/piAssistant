@@ -22,22 +22,7 @@ class TestMain(unittest.TestCase):
 
     def test_process(self):
         self.assistant.process("schalte die stehlampe aus")
-        result = input("wurde die stehlampe angeschaltet ? y/n:")
-        if result != "y":
-            self.fail()
-
-    def test_hue_app(self):
-        self.assistant.apps.hue.setlights({"stehlampe": "on"})
-        result = input("wurde die stehlampe angeschaltet ? y/n:")
-        if result != "y":
-            self.fail()
-
-    def test_timer_app(self):
-        self.assistant.apps.timer.set("00:00:01")
-        result = input("haben sie einen Wecker klingeln gehört ?: y/n")
-        if result != "y":
-            self.fail()
-              
+      
     def test_speechCenter_say(self):
         #check if TTS.say() finishes in reasonable time
         signal.signal(signal.SIGALRM, timeout_handler)

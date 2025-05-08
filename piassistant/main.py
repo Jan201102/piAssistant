@@ -100,19 +100,6 @@ class Main:
                 self.process(command[0][0]['text'])
                 self.memory.memorize_audio(command[1], command[0][0]['text'])
                 self.signals.deactivate()
-                 
-    @staticmethod            
-    def setup_audio_output() :
-        import alsaaudio
-        available_cards = alsaaudio.cards()
-        mixer = alsaaudio.Mixer()
-        for card in available_cards:
-            if card == "seeed2micvoicec":
-                mixer = alsaaudio.Mixer("Playback",cardindex = available_cards.index(card))
-            elif card == "Headphones":
-                mixer = alsaaudio.Mixer("PCM",cardindex = available_cards.index(card))
-                
-        return mixer
     
 class SpeakerHandler():
     def __init__(self, *args, **kwargs):
@@ -128,7 +115,7 @@ class SpeakerHandler():
         available_cards = alsaaudio.cards()
         mixer = alsaaudio.Mixer()
         for card in available_cards:
-            if card == "seeed2micvoicec":
+            if card == "seeed2micvoicec" or "wm8960" in card:
                 mixer = alsaaudio.Mixer("Playback",cardindex = available_cards.index(card))
             elif card == "Headphones":
                 mixer = alsaaudio.Mixer("PCM",cardindex = available_cards.index(card))

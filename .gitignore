@@ -1,6 +1,6 @@
 # Default ignored files
 /shelf/
-.env
+.*env
 *.log
 .idea/
 .vscode/
