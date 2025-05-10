@@ -96,3 +96,11 @@ the user input is passed to all plugins. Each plugin then processes the input fo
 currently there are no plugins available
 ### Run
 After setting everything  up to your wishes just run the example.py file
+
+# TODO
+## latency improvements
+it currently take about 3s from end of speaking to hearing the first answer when using an llm
+latency on windows laptop with tts systemengine
+1. 1.5s: let vosk stop the listentig faster, takes about 1.5s (half the delay)-> try realtimestt to look for imrpovements, seems to be only as fast, -> manually add VAD to vosk
+2. 0.5s: takes about 0.5s from stoping the listening to the first call to say_stream(writing wav: 0.1s, mastermodel 0.15s, getting the first token from ollama: 0.3s)
+3. 1s: takes about 1s to synthesise the first audio chunk

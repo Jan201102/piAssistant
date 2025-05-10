@@ -27,7 +27,7 @@ class TTS():
         self.stream.play()
         logging.debug("Done")
 
-    def say_async(self,text:str):
+    def say_async(self,text:str,**kwargs):
         """
         Converts the given text into speech and plays it asynchronously.
         Args:
@@ -35,7 +35,5 @@ class TTS():
         """
         logging.debug(f"saying:{text}")
         self.stream.feed(text)
-        logging.debug("processing text to be spoken")
         if self.stream.is_playing() is False:
-            self.stream.play_async()
-        logging.debug("Done")
+            self.stream.play_async(fast_sentence_fragment_allsentences=True,**kwargs)

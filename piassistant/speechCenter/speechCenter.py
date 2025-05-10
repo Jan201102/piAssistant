@@ -8,3 +8,6 @@ class SpeechCenter(IspeechCenterGateway):
 
     def say(self,text):
         self.tts.say(text)
+    
+    def say_async(self,text,**kwargs):
+        self.tts.say_async(text,**kwargs)
