@@ -50,7 +50,7 @@ class Main:
         self.plugins = []
         logging.info("loading plugins...")
         for import_plugin in self.import_plugins:
-            plugin_module = importlib.import_module("plugins." + import_plugin, ".")
+            plugin_module = importlib.import_module("piassistant.plugins." + import_plugin, ".")
             plugin = plugin_module.Plugin(self.memory, **config["plugins"][import_plugin])
             self.plugins.append(plugin)
         logging.info("plugins loaded.")

@@ -96,3 +96,7 @@ the user input is passed to all plugins. Each plugin then processes the input fo
 currently there are no plugins available
 ### Run
 After setting everything  up to your wishes just run the example.py file
+
+## TODO
+- update master model to not interfer with the spotify plugin
+- fix mixercontrol for rpi
