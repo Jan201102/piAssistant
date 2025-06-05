@@ -8,7 +8,7 @@ def run_tts_in_process(text):
     tts.say(text)
 
 class TestTTS(unittest.TestCase):
-    def test_say(self):
+    def test_say_process(self):
         # Prozess erstellen
         tts_process = multiprocessing.Process(target=run_tts_in_process, args=("George esra war ein singer,songwriter",))
 
@@ -27,8 +27,16 @@ class TestTTS(unittest.TestCase):
     def test_say_async(self):
         tts = TTS()
         time.sleep(2)
-        print("#\n#\n#\n#\n saying: es wird zwischen 8,85 und 17,82 grad warm#\n#\n#\n#\n")
-        tts.say_async("es wird zwischen 8,85 und 17,82 grad warm",fast_sentence_fragment=True)
+        tts.say_async("es ist wolkig bei einer Temperatur von 16.0 grad, 22.2 milimeter Niederschlag" \
+                            " und einer Windgeschwindigkeit von 4.22 meter pro sekunde")
+        time.sleep(5)
+        tts=None
+    
+    def test_say(self):
+        tts = TTS()
+        time.sleep(2)
+        tts.say("es ist wolkig bei einer Temperatur von 16.0 grad, 22.2 milimeter Niederschlag" \
+                            " und einer Windgeschwindigkeit von 4.22 meter pro sekunde")
         time.sleep(5)
         tts=None
 

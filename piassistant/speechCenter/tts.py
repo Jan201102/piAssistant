@@ -12,7 +12,7 @@ class TTS():
         logging.info("Initializing TTS engine")
         self.engine = SystemEngine(voice)
         self.engine.set_voice_parameters(rate = speed)
-        self.stream = TextToAudioStream(self.engine,frames_per_buffer=256)
+        self.stream = TextToAudioStream(self.engine,frames_per_buffer=256) #frames_per_buffer=256 avoids stuttering on rpi
         logging.info("Done")
 
     def say(self,text:str):
