@@ -24,7 +24,7 @@ class Main:
         self.memory = Memory()
         self.audiCort = AuditoryCortex(*args, **config["assistant"])
         self.signals.showStartup(10)
-        self.speechCent = SpeechCenter()
+        self.speechCent = SpeechCenter(**config["assistant"])
         self.AudioOutput = SpeakerHandler()
         self.signals.showStartup(30)
         

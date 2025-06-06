@@ -2,6 +2,8 @@ import unittest
 import multiprocessing
 from piassistant.speechCenter.tts import TTS
 import time
+import logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 def run_tts_in_process(text):
     tts = TTS()  # TTS-Instanz im neuen Prozess erstellen
@@ -27,17 +29,19 @@ class TestTTS(unittest.TestCase):
     def test_say_async(self):
         tts = TTS()
         time.sleep(2)
-        tts.say_async("es ist wolkig bei einer Temperatur von 16.0 grad, 22.2 milimeter Niederschlag" \
-                            " und einer Windgeschwindigkeit von 4.22 meter pro sekunde")
+        tts.say_async("es ist wolkig bei einer Temperatur von 16,0 grad, 22,2 milimeter Niederschlag" \
+                            " und einer Windgeschwindigkeit von 4,22 meter pro sekunde")
         time.sleep(5)
         tts=None
     
     def test_say(self):
         tts = TTS()
         time.sleep(2)
+        tts.say("warm up")
+        time.sleep(10)
         tts.say("es ist wolkig bei einer Temperatur von 16.0 grad, 22.2 milimeter Niederschlag" \
                             " und einer Windgeschwindigkeit von 4.22 meter pro sekunde")
-        time.sleep(5)
+        time.sleep(10)
         tts=None
 
 
