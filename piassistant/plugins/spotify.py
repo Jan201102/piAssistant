@@ -2,6 +2,8 @@ from spotipy.oauth2 import SpotifyOAuth
 import spotipy
 import re
 import logging
+from os import path
+import webbrowser
 #TODO
 # - documentation
 # - add volume control
@@ -9,10 +11,7 @@ import logging
 
 
 class Plugin:
-    def __init__(self,*args,**kwargs):
-        client_id = kwargs["client_id"]
-        client_secret = kwargs["client_secret"]
-        redirect_uri = kwargs["redirect_uri"]
+    def __init__(self,client_id,client_secret,redirect_uri,web_sdk_token,**kwargs):
         logging.info("loading Spotify plugin")
         self.scope = "user-read-playback-state,user-modify-playback-state"
         self.sp = spotipy.Spotify(client_credentials_manager=SpotifyOAuth(client_id=client_id,
@@ -23,7 +22,7 @@ class Plugin:
         devices = self.sp.devices()
 
         for device in devices['devices']:
-            if "raspberry" in device['name'].lower():
+            if "piassistant Player" == device['name']:
                 self.rpi_device_id = device['id']
                 break
 
@@ -82,3 +81,11 @@ class Plugin:
             artist_results = self.sp.search(q=artist,type="artist")
             artist = artist_results["artists"]["items"][0]
             self.sp.start_playback(context_uri=artist["uri"])
+
+    def start_webplayer(self,web_sdk_token):
+        """
+        Opens the Spotify web player in the default web browser.
+        """
+        html_file = path.join(path.dirname(__file__),"player.html")
+        logging.info("Spotify web player opened")
+        webbrowser.open(f"file://{html_file}?web_sdk_token={web_sdk_token}")

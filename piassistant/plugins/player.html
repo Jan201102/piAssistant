@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spotify Web Playback</title>
+  <script src="https://sdk.scdn.co/spotify-player.js"></script>
+</head>
+<body>
+  <script>
+    function getUrlParameter(name) {
+      name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+      const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+      const results = regex.exec(location.search);
+      return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+
+    // Get token from URL parameter
+    const token = getUrlParameter('web_sdk_token');
+
+    window.onSpotifyWebPlaybackSDKReady = () => {
+      const player = new Spotify.Player({
+        name: 'piassistant Player',
+        getOAuthToken: cb => { cb(token); }
+      });
+
+      // Fehlerbehandlung
+      ['initialization_error','authentication_error','account_error','playback_error']
+        .forEach(event => player.addListener(event, ({message}) => console.error(message)));
+
+      // Sobald bereit, aktiviere den Player und wechsle automatisch zum Gerät
+      player.addListener('ready', ({ device_id }) => {
+        fetch('https://api.spotify.com/v1/me/player', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ device_ids: [device_id] })
+        });
+
+      });
+
+
+      player.connect();
+    };
+  </script>
+</body>
+</html>
