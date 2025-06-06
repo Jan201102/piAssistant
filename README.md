@@ -71,7 +71,12 @@ If you want to use the openwakeword implementation replace `<other args>` with:
 ```json
   "openwakewordmodels":["list_of_paths_to_modelfiles"]
 ```
-
+if you want to use piper tts replace `<other args>` with:
+```json
+  "piper_path":"path to piper executable",
+  "piper_model":"path to piper model",
+  "piper_config":"path to piper config file for model"
+```
 ### Apps
 All apps are controlled with one single tensorflow model. The tensorflow model processes the user
 input and then calls the corresponding apps. All necessary information

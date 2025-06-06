@@ -2,7 +2,7 @@ from geopy.geocoders import Nominatim
 import requests_cache
 from retry_requests import retry
 import openmeteo_requests
-
+import logging
 
 class App:
     def __init__(self, **kwargs):
@@ -28,12 +28,14 @@ class App:
         range = range.strip()
         #required fields temp min max,current,rain,wind_speed
         response = self.openmeteo.weather_api(self.url, params=self.params)[0]
+        answer = ""
         if range == "current":
+            logging.debug("requesting current weather")
             current =  response.Current()
             weather_description = self.wmo_code_to_german_description(current.Variables(3).Value())
-            temp = current.Variables(0).Value()
-            rain = current.Variables(1).Value()
-            wind_speed = current.Variables(2).Value()
+            temp = round(current.Variables(0).Value())
+            rain = round(current.Variables(1).Value())
+            wind_speed = round(current.Variables(2).Value())
             if type == "temp":
                 answer = "es ist {temp} grad".format(temp=temp)
             elif type == "rain":
@@ -43,6 +45,10 @@ class App:
                     answer = "es wird {rain} milimeter Niederschlag geben".format(rain=rain)
             elif type == "wind":
                 answer = "die Windgeschwindigkeit beträgt {wind} meter pro sekunde".format(wind=wind_speed)
+            else:
+                answer = "es ist {desc} bei einer Temperatur von {temp} grad, {rain} milimeter Niederschlag" \
+                            " und einer Windgeschwindigkeit von {wind} meter pro sekunde".format(
+                    temp=temp, rain=rain, wind=wind_speed, desc=weather_description)
         else:
             forecast = response.Daily()
             weather_description = self.wmo_code_to_german_description(forecast.Variables(0).Values(when))
