@@ -6,10 +6,10 @@ import time
 
 class TestSpotifyPlugin(unittest.TestCase):
     def setUp(self):
-        client_id="id",
-        client_secret="secret,
-        redirect_uri="uri",
-        self.plugin = Plugin(client_id, client_secret, redirect_uri)
+        client_id="id"
+        client_secret="secret"
+        redirect_uri="uri"
+        self.plugin = Plugin(None,client_id=client_id, client_secret=client_secret,redirect_uri=redirect_uri)
     
     def test_play_track(self):
         # Test playing a track

@@ -67,7 +67,7 @@ If you want to use picovoice  replace `<other args>` with:
     "picovoice_acccessn_key":"your access key" replace `<other args>` with:
 ```
 If you want to use the openwakeword implementation replace `<other args>` with:
-
+https://github.com/fwartner/home-assistant-wakewords-collection
 ```json
   "openwakewordmodels":["list_of_paths_to_modelfiles"]
 ```

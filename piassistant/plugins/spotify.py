@@ -15,7 +15,7 @@ import urllib.parse
 
 
 class Plugin:
-    def __init__(self, client_id, client_secret,redirect_uri, **kwargs):
+    def __init__(self,memory, client_id, client_secret,redirect_uri, **kwargs):
         logging.info("loading Spotify plugin")
 
         # Initialize Spotify client with credentials
@@ -26,7 +26,6 @@ class Plugin:
 
         self.access_token = self.auth_manager.get_access_token(as_dict=False)
         self.sp = spotipy.Spotify(auth_manager=self.auth_manager)
-        print(self.sp.devices())
         # Start the web player
         self.start_webplayer(self.access_token)
         # Check 10 times if there is a Raspberry Pi device available
@@ -35,7 +34,7 @@ class Plugin:
             if devices['devices']:
                 logging.info("active devices found")
                 break
-            time.sleep(1)
+            time.sleep(5)
         
         self.rpi_device_id = None
         devices = self.sp.devices()
@@ -81,7 +80,7 @@ class Plugin:
             self.sp.start_playback(context_uri=playlist["uri"])
 
         #pause playback
-        if text in ["pause","stop","pause musik","pause musik abspielen"] or "musik aus" in text:
+        if text in ["pause","stopp","pause musik","pause musik abspielen"] or "musik aus" in text:
             self.sp.pause_playback()
 
         #resume playback
