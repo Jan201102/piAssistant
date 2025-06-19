@@ -7,29 +7,45 @@
   <script src="https://sdk.scdn.co/spotify-player.js"></script>
 </head>
 <body>
+  <div id="status">Loading...</div>
+  <div id="debug"></div>
+  
   <script>
-    function getUrlParameter(name) {
-      name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-      const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-      const results = regex.exec(location.search);
-      return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    // Token is directly embedded here
+
+    const token = "{{SPOTIFY_TOKEN}}";
+    
+    if (!token) {
+      document.getElementById('status').innerHTML = '<h1 style="color: red;">Fehler: Kein Token bereitgestellt</h1>';
+      console.error('Kein Token bereitgestellt');
+    } else {
+      document.getElementById('status').innerHTML = '<h1 style="color: green;">Token erfolgreich geladen</h1>';
+      console.log('Token erfolgreich geladen:', token.substring(0, 20) + '...');
     }
 
-    // Get token from URL parameter
-    const token = getUrlParameter('web_sdk_token');
-
     window.onSpotifyWebPlaybackSDKReady = () => {
+      if (!token) {
+        console.error('Kann Player nicht initialisieren - kein Token');
+        return;
+      }
+
       const player = new Spotify.Player({
         name: 'piassistant Player',
         getOAuthToken: cb => { cb(token); }
       });
 
-      // Fehlerbehandlung
-      ['initialization_error','authentication_error','account_error','playback_error']
-        .forEach(event => player.addListener(event, ({message}) => console.error(message)));
+      // Error handling
+      ['initialization_error', 'authentication_error', 'account_error', 'playback_error']
+        .forEach(event => player.addListener(event, ({ message }) => {
+          console.error(`${event}:`, message);
+          document.getElementById('status').innerHTML = `<h1 style="color: red;">Fehler: ${event}</h1><p>${message}</p>`;
+        }));
 
-      // Sobald bereit, aktiviere den Player und wechsle automatisch zum Gerät
+      // Player ready
       player.addListener('ready', ({ device_id }) => {
+        console.log('Player bereit mit Device ID:', device_id);
+        document.getElementById('status').innerHTML = `<h1 style="color: green;">Player bereit!</h1><p>Device ID: ${device_id}</p>`;
+        
         fetch('https://api.spotify.com/v1/me/player', {
           method: 'PUT',
           headers: {
@@ -38,9 +54,7 @@
           },
           body: JSON.stringify({ device_ids: [device_id] })
         });
-
       });
-
 
       player.connect();
     };
