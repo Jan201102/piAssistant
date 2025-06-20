@@ -24,7 +24,7 @@ class Main:
         self.memory = Memory()
         self.audiCort = AuditoryCortex(*args, **config["assistant"])
         self.signals.showStartup(10)
-        self.speechCent = SpeechCenter()
+        self.speechCent = SpeechCenter(**config["assistant"])
         self.AudioOutput = SpeakerHandler()
         self.signals.showStartup(30)
         
@@ -113,12 +113,45 @@ class SpeakerHandler():
     def init_linux(self):
         import alsaaudio
         available_cards = alsaaudio.cards()
-        mixer = alsaaudio.Mixer()
-        for card in available_cards:
-            if card == "seeed2micvoicec" or "wm8960" in card:
-                mixer = alsaaudio.Mixer("Playback",cardindex = available_cards.index(card))
-            elif card == "Headphones":
-                mixer = alsaaudio.Mixer("PCM",cardindex = available_cards.index(card))
+        mixer = None
+        
+        # Try to find a suitable mixer control
+        for card_idx, card in enumerate(available_cards):
+            try:
+                if card == "seeed2micvoicec" or "wm8960" in card:
+                    mixer = alsaaudio.Mixer("Playback", cardindex=card_idx)
+                    break
+                elif card == "Headphones":
+                    mixer = alsaaudio.Mixer("PCM", cardindex=card_idx)
+                    break
+            except alsaaudio.ALSAAudioError:
+                continue
+        
+        # If no specific card found, try common mixer controls
+        if mixer is None:
+            common_controls = ["Master", "PCM", "Speaker", "Headphone", "Digital"]
+            for control in common_controls:
+                try:
+                    mixer = alsaaudio.Mixer(control)
+                    logging.info(f"Using mixer control: {control}")
+                    break
+                except alsaaudio.ALSAAudioError:
+                    continue
+        
+        # If still no mixer found, list available controls and use the first one
+        if mixer is None:
+            try:
+                mixers = alsaaudio.mixers()
+                if mixers:
+                    mixer = alsaaudio.Mixer(mixers[0])
+                    logging.info(f"Using first available mixer control: {mixers[0]}")
+                else:
+                    logging.warning("No mixer controls found")
+                    return None
+            except alsaaudio.ALSAAudioError as e:
+                logging.error(f"Failed to initialize any mixer: {e}")
+                return None
+        
         return mixer
     
     def init_windows(self):
@@ -132,6 +165,10 @@ class SpeakerHandler():
         return volume
     
     def mute_speakers(self):
+        if self.mixer is None:
+            logging.warning("Audio mixer not available - cannot mute speakers")
+            return
+            
         if self.platform == "Linux":
             self.volume = self.mixer.getvolume()[0]
             self.mixer.setvolume(0)
@@ -139,12 +176,16 @@ class SpeakerHandler():
             self.mixer.SetMute(1, None)
 
     def unmute_speakers(self):
+        if self.mixer is None:
+            logging.warning("Audio mixer not available - cannot unmute speakers")
+            return
+            
         if self.platform == "Linux":
             self.mixer.setvolume(self.volume)
         elif self.platform == "Windows":
-            self.mixer.SetMute(0,None)
-    
-                
-    
-                
+            self.mixer.SetMute(0, None)
+
+
+
+
 

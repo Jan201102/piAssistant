@@ -71,7 +71,12 @@ If you want to use the openwakeword implementation replace `<other args>` with:
 ```json
   "openwakewordmodels":["list_of_paths_to_modelfiles"]
 ```
-
+if you want to use piper tts replace `<other args>` with:
+```json
+  "piper_path":"path to piper executable",
+  "piper_model":"path to piper model",
+  "piper_config":"path to piper config file for model"
+```
 ### Apps
 All apps are controlled with one single tensorflow model. The tensorflow model processes the user
 input and then calls the corresponding apps. All necessary information
@@ -96,3 +101,11 @@ the user input is passed to all plugins. Each plugin then processes the input fo
 currently there are no plugins available
 ### Run
 After setting everything  up to your wishes just run the example.py file
+
+# TODO
+## latency improvements
+it currently take about 3s from end of speaking to hearing the first answer when using an llm
+latency on windows laptop with tts systemengine
+1. 1.5s: let vosk stop the listentig faster, takes about 1.5s (half the delay)-> try realtimestt to look for imrpovements, seems to be only as fast, -> manually add VAD to vosk
+2. 0.5s: takes about 0.5s from stoping the listening to the first call to say_stream(writing wav: 0.1s, mastermodel 0.15s, getting the first token from ollama: 0.3s)
+3. 1s: takes about 1s to synthesise the first audio chunk
