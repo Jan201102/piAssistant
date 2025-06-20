@@ -25,6 +25,10 @@ to `/boot/config.txt` and connect neopixel to `GPIO10`.
   - retry-requests
 - timer
   - pyame
+- spotify
+  - spotipy
+  - word2num-de
+
 
 ### notes on running on pi5
 python packages:
@@ -99,15 +103,16 @@ If the main tensorflow model can't determine, which app the user wants to use,
 the user input is passed to all plugins. Each plugin then processes the input for itself.
 #### Plugin configuration
 ##### Spotipy
+  on the devloper portal create an app and supply the id,secreat and redirect ui.`
+  https://example.com/callback`
+  is recommended for the redirect uri.
 ```json
 "spotify":{
   "client_id":"your_client_ID",
   "client_secret":"your client secret",
   "redirect_uri":"your redirect uri",
-  "web_sdk_token":"your web sdk token"
 }
 ```
-currently there are no plugins available
 ### Run
 After setting everything  up to your wishes just run the example.py file
 

@@ -6,12 +6,13 @@ import os
 import webbrowser
 import time
 import urllib.parse
+import subprocess
+from word2num_de import word_to_number
 
 
 #TODO
 # - documentation
 # - add volume control
-# - fix resume playback
 
 
 class Plugin:
@@ -20,9 +21,7 @@ class Plugin:
 
         # Initialize Spotify client with credentials
         #self.auth_manager = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
-        self.auth_manager = SpotifyOAuth(client_id=client_id,client_secret=client_secret,redirect_uri=redirect_uri,scope="user-read-email user-read-private user-read-playback-state user-modify-playback-state streaming")
-        token_info = self.auth_manager.get_access_token()
-        access_token = token_info['access_token']
+        self.auth_manager = SpotifyOAuth(client_id=client_id,client_secret=client_secret,redirect_uri=redirect_uri,scope="user-read-email user-read-private user-read-playback-state user-modify-playback-state streaming",open_browser=False)
 
         self.access_token = self.auth_manager.get_access_token(as_dict=False)
         self.sp = spotipy.Spotify(auth_manager=self.auth_manager)
@@ -101,6 +100,21 @@ class Plugin:
             artist = artist_results["artists"]["items"][0]
             self.sp.start_playback(context_uri=artist["uri"])
 
+        #set volume percentage
+        set_volume = re.search(r'lautstärke (.*) prozent', text)
+        if set_volume:
+            volume = set_volume.group(1)
+            try:
+                volume = word_to_number(volume)
+            except ValueError:
+                logging.error(f"Invalid volume: {volume}")
+                return
+            
+            if 0 <= volume <= 100:
+                self.sp.volume(volume)
+            else:
+                logging.error(f"Volume out of range: {volume}")
+
     def start_webplayer(self, web_sdk_token):
         """
         Opens the Spotify web player with embedded token.
@@ -131,8 +145,33 @@ class Plugin:
         # Open in browser
         if os.name == 'nt':  # Windows
             file_url = f"file:///{temp_html.replace(os.sep, '/')}"
+            webbrowser.open(file_url)
         else:
+            logging.info("Running on Linux, starting Xvfb for headless browser support")
             file_url = f"file://{temp_html}"
+            # Start Xvfb
+            xvfb_process = subprocess.Popen(['Xvfb', ':99', '-screen', '0', '800x600x24'])
+            os.environ['DISPLAY'] = ':99'
+            time.sleep(2)
+            # Open browser with minimal window size
+            try:
+                subprocess.run(['chromium-browser', '--no-sandbox', '--window-size=640,480', '--autoplay-policy=no-user-gesture-required', file_url], check=True)
+            except FileNotFoundError:
+                try:
+                    subprocess.run(['firefox', '--width=640', '--height=480', file_url], check=True)
+                except FileNotFoundError:
+                    print("No suitable browser found")
         
         logging.info(f"Opening Spotify player: {file_url}")
-        webbrowser.open(file_url)
+        
+
+if __name__ == "__main__":
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    
+    # Example usage
+    client_id = "cd1b23f9bc554b3bb13b7a2451b5b03b"
+    client_secret = "1a3a40873c3146689792c921d5f81f35"
+    redirect_uri = "https://example.com/callback"
+    
+    plugin = Plugin(memory=None, client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri)
