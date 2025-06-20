@@ -163,15 +163,3 @@ class Plugin:
                     print("No suitable browser found")
         
         logging.info(f"Opening Spotify player: {file_url}")
-        
-
-if __name__ == "__main__":
-    import logging
-    logging.basicConfig(level=logging.INFO)
-    
-    # Example usage
-    client_id = "cd1b23f9bc554b3bb13b7a2451b5b03b"
-    client_secret = "1a3a40873c3146689792c921d5f81f35"
-    redirect_uri = "https://example.com/callback"
-    
-    plugin = Plugin(memory=None, client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri)
