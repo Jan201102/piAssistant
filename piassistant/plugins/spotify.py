@@ -195,4 +195,3 @@ class Plugin:
             logging.info(f"Successfully started chromium with PID {browser_process.pid}")
 
         logging.info(f"Opened Spotify player: {file_url}")
-        
