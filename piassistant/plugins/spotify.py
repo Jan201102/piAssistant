@@ -8,11 +8,7 @@ import time
 import urllib.parse
 import subprocess
 from word2num_de import word_to_number
-
-
-#TODO
-# - documentation
-# - add volume control
+import random
 
 
 class Plugin:
@@ -147,19 +143,55 @@ class Plugin:
             file_url = f"file:///{temp_html.replace(os.sep, '/')}"
             webbrowser.open(file_url)
         else:
+            # For Linux systems (both regular and systemd)
             logging.info("Running on Linux, starting Xvfb for headless browser support")
-            file_url = f"file://{temp_html}"
-            # Start Xvfb
-            xvfb_process = subprocess.Popen(['Xvfb', ':99', '-screen', '0', '800x600x24'])
-            os.environ['DISPLAY'] = ':99'
-            time.sleep(2)
-            # Open browser with minimal window size
+            
+            # Create a random display number to avoid conflicts
+            display_num = random.randint(99, 999)
+            
+            # Start Xvfb with specific display number
+            xvfb_cmd = f'Xvfb :{display_num} -screen 0 800x600x24 -ac +extension GLX +render -noreset'
             try:
-                subprocess.run(['chromium-browser', '--no-sandbox', '--window-size=640,480', '--autoplay-policy=no-user-gesture-required', file_url], check=True)
-            except FileNotFoundError:
-                try:
-                    subprocess.run(['firefox', '--width=640', '--height=480', file_url], check=True)
-                except FileNotFoundError:
-                    print("No suitable browser found")
-        
-        logging.info(f"Opening Spotify player: {file_url}")
+                xvfb_process = subprocess.Popen(xvfb_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                logging.info(f"Started Xvfb on display :{display_num}")
+                time.sleep(2)  # Wait for Xvfb to initialize
+            except Exception as e:
+                logging.error(f"Failed to start Xvfb: {str(e)}")
+                return
+                
+            # Setup clean environment variables
+            browser_env = os.environ.copy()
+            browser_env['DISPLAY'] = f':{display_num}'
+            
+            # Remove problematic D-Bus variables if running as systemd
+            if 'DBUS_SESSION_BUS_ADDRESS' in browser_env:
+                del browser_env['DBUS_SESSION_BUS_ADDRESS']
+                logging.info("Running as systemd service, removing DBUS_SESSION_BUS_ADDRESS")
+            
+            file_url = f"file://{temp_html}"
+
+            # Chromium command line options
+            browser_options = [
+                '--no-sandbox',  
+                '--disable-gpu',
+                '--headless=new',  # Modern headless mode
+                '--disable-dev-shm-usage',
+                '--disable-software-rasterizer',
+                '--disable-features=VizDisplayCompositor',
+                '--window-size=800,600', 
+                '--autoplay-policy=no-user-gesture-required',
+                '--disable-setuid-sandbox',
+                '--disable-notifications',
+                file_url
+            ]
+            logging.info(f"Attempting to start chromium")
+            cmd = ['chromium-browser'] + browser_options
+            browser_process = subprocess.Popen(
+                cmd,
+                env=browser_env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            logging.info(f"Successfully started chromium with PID {browser_process.pid}")
+
+        logging.info(f"Opened Spotify player: {file_url}")
