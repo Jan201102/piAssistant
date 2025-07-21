@@ -41,7 +41,6 @@ class PocketsphinxText():
     def listen(self,sec):
 
         self.decoder.start_utt()
-        self.ear.start_audio(False,sec)
         data = self.ear.get_audio()
 
         while data != None:

@@ -63,7 +63,6 @@ class PocketsphinxKWS:
         return False
 
     def wait(self):
-        self.ear.start_audio(threading=False)
         self.kws_decoder.start_utt()
 
         self.kws_decoder.process_raw(self.ear.get_audio(), False, False)
@@ -71,9 +70,6 @@ class PocketsphinxKWS:
             self.kws_decoder.process_raw(self.ear.get_audio(), False, False)
         self.start_sec = time.perf_counter()
         self.kws_decoder.end_utt()
-        logging.debug('{} kws decoder ende utt'.format(time.perf_counter() - self.start_sec))
-        self.ear.stop_audio()
-        logging.debug('{} sec  stoped audio -> wait() finished'.format(time.perf_counter() - self.start_sec))
         return True
 
     @property

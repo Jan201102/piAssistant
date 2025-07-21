@@ -75,3 +75,11 @@ class Ear(IearGateway):
             self.stream.stop_stream()
         self.stream.close()
         return self.recorder.save_recording()
+    
+    def start_recording(self):
+        self.recorder.new_record()
+        self.record = True
+
+    def stop_recording(self):
+        self.record = False
+        return self.recorder.save_recording()

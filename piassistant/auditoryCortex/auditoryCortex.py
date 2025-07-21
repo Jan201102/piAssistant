@@ -14,9 +14,6 @@ class AuditoryCortex(IauditoryCortexGateway):
         if kwargs["KWS_engine"] == "pocketsphinx":
             from .pocketsphinx_kws import PocketsphinxKWS
             self.kws = PocketsphinxKWS(self.ear,**kwargs)
-        elif kwargs["KWS_engine"] == "picovoice":  
-            from .picovoice_kws import PicovoiceKWS
-            self.kws = PicovoiceKWS(self.ear,**kwargs)
         elif kwargs["KWS_engine"] == "openwakeword":
             from .openwakeword import OpenWakeWordDetector
             self.kws = OpenWakeWordDetector(self.ear,**kwargs)
@@ -28,12 +25,28 @@ class AuditoryCortex(IauditoryCortexGateway):
             text = input("Geben sie eine Anweisung ein:")
             return [[{'text':text}], None]
         else:
-            return self.text.listen(file=file,record=record,verbose=verbose)
-            
+            self.ear.start_audio(file = file, record=record)
+            result = self.text.listen(verbose=verbose)
+            self.ear.stop_audio()
+            return result
 
     def wait(self):
         if self.useCmdInput == False:
-            return self.kws.wait()
-        else:
+            self.ear.start_audio(threading=False)
+            self.kws.wait()
+            self.ear.stop_audio()
             return True
-
+        return True
+        
+    def wait_then_listen(self, record=False, verbose=1):
+        if self.useCmdInput:
+            text = input("Geben sie eine Anweisung ein:")
+            return [[{'text':text}], None]
+        else:
+            self.ear.start_audio(threading=False)
+            self.kws.wait()
+            if record:
+                self.ear.start_recording()
+            result = self.text.listen( verbose=verbose)
+            self.ear.stop_audio(verbose=verbose)
+            return result
